@@ -21,9 +21,6 @@ Functions:
 
 import xml.etree.ElementTree as ET
 import operator as op
-import glob
-import os
-from HanTa import HanoverTagger as ht
 import nltk
 import xmi_analysis_util as util
 from collections import Counter
