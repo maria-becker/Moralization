@@ -51,7 +51,7 @@ def moral_values_freq(value_list, sum_dimensions=False, plot=False):
                 df.loc[i*2]['Vorkommen']
                 + df.loc[i*2 + 1]['Vorkommen']
             )
-        temp_df.loc[6]['Vorkommen'] = df.loc[12]['Vorkommen']
+        temp_df.loc[6, 'Vorkommen'] = df.loc[12, 'Vorkommen']
 
         df = temp_df
 
@@ -64,7 +64,7 @@ def moral_values_freq(value_list, sum_dimensions=False, plot=False):
         'Vorkommen': [total],
         'Anteil': [1]
         })
-    df = df.append(sum_df, ignore_index=True)
+    df = pd.concat([df, sum_df], ignore_index=True)
 
     if not plot:
         print(df)
@@ -106,7 +106,7 @@ def protagonist_role_freq(protag_list, language=0, plot=False):
         'Vorkommen': [total],
         'Anteil': [1]
         })
-    df = df.append(sum_df, ignore_index=True)
+    df = pd.concat([df, sum_df], ignore_index=True)
 
     if language.lower() == 'de':
         rows_to_delete = ['Malefizient:in', 'Bezug unklar']
@@ -154,7 +154,7 @@ def protagonist_group_freq(protag_list, plot=False):
         'Vorkommen': [total],
         'Anteil': [1]
         })
-    df = df.append(sum_df, ignore_index=True)
+    df = pd.concat([df, sum_df], ignore_index=True)
 
     if not plot:
         print(df)
@@ -195,7 +195,7 @@ def protagonist_ownother_freq(protag_list, plot=False):
         'Vorkommen': [total],
         'Anteil': [1]
         })
-    df = df.append(sum_df, ignore_index=True)
+    df = pd.concat([df, sum_df], ignore_index=True)
 
     if not plot:
         print(df)
@@ -234,7 +234,7 @@ def freq_inside_spans(moral_spans, label_list, plot=False):
             'Häufigkeit': [total],
             'Anteil': [1]
             })
-        df = df.append(sum_df, ignore_index=True)
+        df = pd.concat([df, sum_df], ignore_index=True)
         print(df)
 
 
