@@ -224,7 +224,7 @@ def freq_inside_spans(moral_spans, label_list, plot=False):
         plt.bar(df.index, df['Häufigkeit'])
         plt.xlabel('Label in einer Moralis.')
         plt.ylabel('Häufigkeit')
-        plt.title('Bar Plot')
+        plt.title('Häufigkeitsverteilung')
         plt.show()
     else:
         total = df['Häufigkeit'].sum()
