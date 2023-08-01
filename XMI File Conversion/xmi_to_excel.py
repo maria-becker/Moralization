@@ -1,8 +1,7 @@
 import xml.etree.ElementTree as ET
 import os
-import xmi_analysis_util as util
+import xmi_conversion_util as util
 import xlsxwriter
-import os
 import zipfile
 
 
@@ -111,7 +110,7 @@ def list_subj_moral_from_xmi(filepath):
 
 def list_protagonists_from_xmi(
     filepath,
-    ignore_list=[],
+    ignore_list=None,
     skip_duplicates=False
 ):
     """
@@ -374,7 +373,7 @@ def protagonist_list(anno_list, moralization, text):
     return listy
 
 
-def write_excel_num(sourcepath, goalpath):
+def write_excel_count(sourcepath, goalpath):
     text = text_from_xmi(sourcepath)
     moralizations = list_moralizations_from_xmi(sourcepath)
     obj_morals = list_obj_moral_from_xmi(sourcepath)
@@ -561,44 +560,47 @@ def write_excel_minimal(sourcepath, goalpath):
 
 def extract_files(root_folder, goal_folder):
 
-    for root, dirs, files in os.walk(root_folder):
-        for dir in dirs:
-            subdir = os.path.join(root, dir)
+    for root, dirs, _ in os.walk(root_folder):
+        for directory in dirs:
+            subdir = os.path.join(root, directory)
             print(subdir)
             extracted = False
             for file in os.listdir(subdir):
-                if (file.endswith('.zip') and file[:-3] in dir):
+                if (file.endswith('.zip') and file[:-3] in directory):
                     zip_path = os.path.join(subdir, file)
-                    # print(zip_path)
                     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                         for zip_file in zip_ref.namelist():
-                            if zip_file.endswith('.xmi') and zip_file[:-3] in zip_file:
+                            if (zip_file.endswith('.xmi')
+                                    and zip_file[:-3] in zip_file):
                                 destination_folder = os.path.join(
                                     goal_folder,
-                                    dir)
-                                os.makedirs(destination_folder, exist_ok=True)
+                                    directory)
+                                os.makedirs(
+                                    destination_folder,
+                                    exist_ok=True)
                                 zip_ref.extractall(destination_folder)
                                 extracted = True
 
             if not extracted:
                 for file in os.listdir(subdir):
                     if (file.startswith('inception-document')):
-                        print("kek")
                         zip_path = os.path.join(subdir, file)
-                        # print(zip_path)
                         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                             for zip_file in zip_ref.namelist():
-                                if zip_file.endswith('.xmi') and zip_file[:-3] in dir:
+                                if (zip_file.endswith('.xmi')
+                                        and zip_file[:-3] in directory):
                                     destination_folder = os.path.join(
                                         goal_folder,
-                                        dir)
-                                    os.makedirs(destination_folder, exist_ok=True)
+                                        directory)
+                                    os.makedirs(
+                                        destination_folder,
+                                        exist_ok=True)
                                     zip_ref.extractall(destination_folder)
                                     extracted = True
 
 
-def xmi_iterate_num(root_folder, goal_folder):
-    for root, dirs, files in os.walk(root_folder):
+def xmi_iterate_count(root_folder, goal_folder):
+    for root, _, files in os.walk(root_folder):
         for file in files:
             if file.endswith('.xmi'):
                 filename = os.path.splitext(os.path.basename(root))[0]
@@ -606,11 +608,11 @@ def xmi_iterate_num(root_folder, goal_folder):
                 goalpath = os.path.join(goal_folder, filename)
                 sourcepath = os.path.join(root, file)
                 print(goalpath)
-                write_excel_num(sourcepath, goalpath)
+                write_excel_count(sourcepath, goalpath)
 
 
 def xmi_iterate_minimal(root_folder, goal_folder):
-    for root, dirs, files in os.walk(root_folder):
+    for root, _, files in os.walk(root_folder):
         for file in files:
             if file.endswith('.xmi'):
                 filename = os.path.splitext(os.path.basename(root))[0]
@@ -621,8 +623,8 @@ def xmi_iterate_minimal(root_folder, goal_folder):
                 write_excel_minimal(sourcepath, goalpath)
 
 
-def xmi_iterate_german_num(root_folder, goal_folder):
-    for root, dirs, files in os.walk(root_folder):
+def xmi_iterate_german_count(root_folder, goal_folder):
+    for root, _, files in os.walk(root_folder):
         for file in files:
             if file.endswith('.xmi'):
                 filename = os.path.splitext(os.path.basename(file))[0]
@@ -630,11 +632,11 @@ def xmi_iterate_german_num(root_folder, goal_folder):
                 goalpath = os.path.join(goal_folder, filename)
                 sourcepath = os.path.join(root, file)
                 print(goalpath)
-                write_excel_num(sourcepath, goalpath)
+                write_excel_count(sourcepath, goalpath)
 
 
 def xmi_iterate_german_minimal(root_folder, goal_folder):
-    for root, dirs, files in os.walk(root_folder):
+    for root, _, files in os.walk(root_folder):
         for file in files:
             if file.endswith('.xmi'):
                 filename = os.path.splitext(os.path.basename(file))[0]
@@ -643,22 +645,3 @@ def xmi_iterate_german_minimal(root_folder, goal_folder):
                 sourcepath = os.path.join(root, file)
                 print(goalpath)
                 write_excel_minimal(sourcepath, goalpath)
-
-
-# extract_files(r"C:\Users\Arbeit\Desktop\IÜD\Daten-IUED-180723\annotation", r"C:\Users\Arbeit\Desktop\IÜD\neu_relevant")
-
-xmi_iterate_num(
-    r"C:\Users\Arbeit\Desktop\IÜD\neu_relevant",
-    r"C:\Users\Arbeit\Desktop\Output_neu_long")
-
-xmi_iterate_minimal(
-    r"C:\Users\Arbeit\Desktop\IÜD\neu_relevant",
-    r"C:\Users\Arbeit\Desktop\Output_neu_short")
-
-xmi_iterate_german_num(
-    r"C:\Users\Arbeit\Desktop\Bachelorarbeit\Data\Moralisierungsdateien_DE_xmi\documents-export-2023-01-25",
-    r"C:\Users\Arbeit\Desktop\Output_neu_long")
-
-xmi_iterate_german_minimal(
-    r"C:\Users\Arbeit\Desktop\Bachelorarbeit\Data\Moralisierungsdateien_DE_xmi\documents-export-2023-01-25",
-    r"C:\Users\Arbeit\Desktop\Output_neu_short")
