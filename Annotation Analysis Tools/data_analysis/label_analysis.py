@@ -246,6 +246,75 @@ def list_subj_moral_from_xmi(filepath):
     return morals_list
 
 
+def list_comfunction_from_xmi(filepath):
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    # Get all moralizing instances
+    comfunction_list = []
+    for span in span_list:
+        category = span.get('KommunikativeFunktion')
+
+        if category:
+            data_dict = {
+                "Coordinates":
+                    (int(span.get("begin")), int(span.get("end"))),
+                "Category":
+                    category
+            }
+            comfunction_list.append(data_dict)
+
+    return comfunction_list
+
+
+def list_impldemand_from_xmi(filepath):
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    # Get all moralizing instances
+    demand_list = []
+    for span in span_list:
+        category = span.get('KAT5Ausformulierung')
+
+        if category:
+            data_dict = {
+                "Coordinates":
+                    (int(span.get("begin")), int(span.get("end"))),
+                "Category":
+                    category
+            }
+            demand_list.append(data_dict)
+
+    return demand_list
+
+
+def list_expldemand_from_xmi(filepath):
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    # Get all moralizing instances
+    demand_list = []
+    for span in span_list:
+        category = span.get('Forderung')
+
+        if category:
+            data_dict = {
+                "Coordinates":
+                    (int(span.get("begin")), int(span.get("end"))),
+                "Category":
+                    category
+            }
+            demand_list.append(data_dict)
+
+    return demand_list
+
+
 def protagonists_in_context(
     word_list,
     filepath,

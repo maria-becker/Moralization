@@ -75,10 +75,11 @@ def moral_values_freq(value_list, sum_dimensions=False, plot=False):
         plt.ylabel('Vorkommen')
         plt.title('Frequenz Moralwerte')
         plt.xticks(rotation=45)
+        plt.tight_layout()
         plt.show()
 
 
-def protagonist_role_freq(protag_list, language=0, plot=False):
+def protagonist_role_freq(protag_list, language, plot=False):
     df = {
         'Rolle': [
             'Adresassat:in',
@@ -124,6 +125,7 @@ def protagonist_role_freq(protag_list, language=0, plot=False):
         plt.ylabel('Vorkommen')
         plt.title('Frequenz Rollen')
         plt.xticks(rotation=45)
+        plt.tight_layout()
         plt.show()
 
 
@@ -165,6 +167,7 @@ def protagonist_group_freq(protag_list, plot=False):
         plt.ylabel('Vorkommen')
         plt.title('Frequenz Gruppen')
         plt.xticks(rotation=45)
+        plt.tight_layout()
         plt.show()
 
 
@@ -205,8 +208,106 @@ def protagonist_ownother_freq(protag_list, plot=False):
         plt.xlabel('Own/Other')
         plt.ylabel('Vorkommen')
         plt.title('Frequenz Own/Other')
-        plt.xticks(rotation=45)
         plt.show()
+
+
+def comfunction_freq(comfunction_list, language, plot=False, export=False):
+    df = {
+        'Kommunikative Funktion': [
+            'Appell',
+            'Beziehung',
+            'Darstellung',
+            'Expression',
+            'Appell+Beziehung',
+            'Appell+Darstellung',
+            'Appell+Expression'
+        ],
+        'Vorkommen': [
+            0, 0, 0, 0, 0, 0, 0
+        ]
+    }
+    df = pd.DataFrame(df)
+    for func in comfunction_list:
+        if func['Category'] in df['Kommunikative Funktion'].values:
+            df.loc[
+                df['Kommunikative Funktion'] == func['Category'],
+                'Vorkommen'] += 1
+
+    total = df['Vorkommen'].sum()
+    df['Anteil'] = (df['Vorkommen'] / total)
+
+    # Create a new row with the 'sum' values
+    sum_df = pd.DataFrame({
+        'Kommunikative Funktion': ['Summe'],
+        'Vorkommen': [total],
+        'Anteil': [1]
+        })
+    df = pd.concat([df, sum_df], ignore_index=True)
+
+    if language.lower() == 'de':
+        rows_to_delete = [
+            'Appell+Beziehung',
+            'Appell+Darstellung',
+            'Appell+Expression'
+        ]
+    else:
+        rows_to_delete = [
+            'Beziehung',
+            'Darstellung',
+            'Expression'
+        ]
+    df = df[~df['Kommunikative Funktion'].isin(rows_to_delete)]
+
+    if not plot:
+        print(df)
+    else:
+        df_nosum = df[df['Kommunikative Funktion'] != 'Summe']
+        plt.bar(df_nosum['Kommunikative Funktion'], df_nosum['Vorkommen'])
+        plt.xlabel('Kommunikative Funktion')
+        plt.ylabel('Vorkommen')
+        plt.title('Frequenz kommunikativer Funktionen')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()
+    if export:
+        df.to_csv("comfunction_freq.csv")
+
+
+def demand_freq(expldemand_list, impldemand_list, plot=False, export=False):
+    df = {
+        'Forderungstyp': [
+            'Explizite Forderung',
+            'Implizite Forderung'
+        ],
+        'Vorkommen': [
+            len(expldemand_list),
+            len(impldemand_list)
+        ]
+    }
+    df = pd.DataFrame(df)
+
+    total = df['Vorkommen'].sum()
+    df['Anteil'] = (df['Vorkommen'] / total)
+
+    # Create a new row with the 'sum' values
+    sum_df = pd.DataFrame({
+        'Forderungstyp': ['Summe'],
+        'Vorkommen': [total],
+        'Anteil': [1]
+        })
+    df = pd.concat([df, sum_df], ignore_index=True)
+
+    if not plot:
+        print(df)
+    else:
+        df_nosum = df[df['Forderungstyp'] != 'Summe']
+        plt.bar(df_nosum['Forderungstyp'], df_nosum['Vorkommen'])
+        plt.xlabel('Forderungstyp')
+        plt.ylabel('Vorkommen')
+        plt.title('Frequenz Forderungstypen')
+        plt.show()
+    if export:
+        df.to_csv("demand_freq.csv")
 
 
 def freq_inside_spans(moral_spans, label_list, plot=False):
