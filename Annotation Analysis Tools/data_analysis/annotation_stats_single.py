@@ -81,9 +81,7 @@ def moral_values_freq(corpus, moral_type="all",
         })
     df = pd.concat([df, sum_df], ignore_index=True)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Moralwert'] != 'Summe']
         plt.bar(df_nosum['Moralwert'], df_nosum['Vorkommen'])
         plt.xlabel('Moralwert', fontstyle='italic')
@@ -136,9 +134,7 @@ def protagonist_role_freq(corpus, language, plot=False, export=False):
         rows_to_delete = ['Kein Bezug']
         df = df[~df['Rolle'].isin(rows_to_delete)]
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Rolle'] != 'Summe']
         plt.bar(df_nosum['Rolle'], df_nosum['Vorkommen'])
         plt.xlabel('Rolle', fontstyle='italic')
@@ -183,9 +179,7 @@ def protagonist_group_freq(corpus, plot=False, export=False):
         })
     df = pd.concat([df, sum_df], ignore_index=True)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Gruppe'] != 'Summe']
         plt.bar(df_nosum['Gruppe'], df_nosum['Vorkommen'])
         plt.xlabel('Gruppe', fontstyle='italic')
@@ -230,9 +224,7 @@ def protagonist_ownother_freq(corpus, plot=False, export=False):
         })
     df = pd.concat([df, sum_df], ignore_index=True)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Own/Other'] != 'Summe']
         plt.bar(df_nosum['Own/Other'], df_nosum['Vorkommen'])
         plt.xlabel('Own/Other', fontstyle='italic')
@@ -292,9 +284,7 @@ def comfunction_freq(corpus, language, plot=False, export=False):
         ]
     df = df[~df['Kommunikative Funktion'].isin(rows_to_delete)]
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Kommunikative Funktion'] != 'Summe']
         plt.bar(df_nosum['Kommunikative Funktion'], df_nosum['Vorkommen'])
         plt.xlabel('Kommunikative Funktion', fontstyle='italic')
@@ -333,9 +323,7 @@ def demand_freq(corpus, plot=False, export=False):
         })
     df = pd.concat([df, sum_df], ignore_index=True)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Forderungstyp'] != 'Summe']
         plt.bar(df_nosum['Forderungstyp'], df_nosum['Vorkommen'])
         plt.xlabel('Forderungstyp', fontstyle='italic')
@@ -387,8 +375,6 @@ def freq_inside_spans(corpus, label_type, plot=False, export=False):
         ax = plt.gca()
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         plt.show()
-    else:
-        print(df)
     if export:
         df.to_csv(("freq_inside_spans_" + label_type + ".csv"),
                   index=False, decimal=',')
@@ -426,7 +412,6 @@ def roles_and_groups(corpus, language, percent=False, export=False):
                     'Malefizient:in'
                     'Bezug unklar'
                 ]].apply(lambda x: x / x.sum() * 100)
-    print(df)
 
     if export:
         df.to_csv("roles_and_groups.csv", index=False, decimal=',')
@@ -446,7 +431,6 @@ def groups_and_ownother(corpus, percent=False, export=False):
                   'Other Group',
                   'Neutral',
                   ]].apply(lambda x: x / x.sum() * 100)
-    print(df)
 
     if export:
         df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
@@ -466,7 +450,6 @@ def roles_and_ownother(corpus, language, percent=False, export=False):
                   'Other Group',
                   'Neutral',
                   ]].apply(lambda x: x / x.sum() * 100)
-    print(df)
 
     if export:
         df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
@@ -513,7 +496,5 @@ def association_measure(corpus, cat1, cat2, significance=True):
 
                 pmi_norm = xau.calculate_normalized_pmi(table)
                 am_df.loc[row_label, col_label] = pmi_norm
-
-    print(am_df)
 
     return am_df

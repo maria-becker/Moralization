@@ -67,9 +67,7 @@ def moral_values_freq_collection(corpus_collection, moral_type="all",
         df['Vorkommen'] = df['Vorkommen'].add(sub_df['Vorkommen'],
                                               axis='index')
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Moralwert'] != 'Summe']
         plt.bar(df_nosum['Moralwert'], df_nosum['Vorkommen'])
         plt.xlabel('Moralwert', fontstyle='italic')
@@ -124,9 +122,7 @@ def protagonist_role_freq_collection(corpus_collection,
         df = df.drop(4)
         df = df.drop(6)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Rolle'] != 'Summe']
         plt.bar(df_nosum['Rolle'], df_nosum['Vorkommen'])
         plt.xlabel('Rolle', fontstyle='italic')
@@ -171,9 +167,7 @@ def protagonist_group_freq_collection(corpus_collection,
     total = df['Vorkommen'].sum()
     df['Anteil'] = (df['Vorkommen'] / total)
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Gruppe'] != 'Summe']
         plt.bar(df_nosum['Gruppe'], df_nosum['Vorkommen'])
         plt.xlabel('Gruppe', fontstyle='italic')
@@ -212,9 +206,7 @@ def protagonist_ownother_freq_collection(corpus_collection,
         df['Vorkommen'] = df['Vorkommen'].add(sub_df['Vorkommen'],
                                               axis='index')
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Own/Other'] != 'Summe']
         plt.bar(df_nosum['Own/Other'], df_nosum['Vorkommen'])
         plt.xlabel('Own/Other', fontstyle='italic')
@@ -267,9 +259,7 @@ def comfunction_freq_collection(corpus_collection,
                       'Expression']
     df = df[~df['Kommunikative Funktion'].isin(rows_to_delete)]
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Kommunikative Funktion'] != 'Summe']
         plt.bar(df_nosum['Kommunikative Funktion'], df_nosum['Vorkommen'])
         plt.xlabel('Kommunikative Funktion', fontstyle='italic')
@@ -305,9 +295,7 @@ def demand_freq_collection(corpus_collection,
         df['Vorkommen'] = df['Vorkommen'].add(sub_df['Vorkommen'],
                                               axis='index')
 
-    if not plot:
-        print(df)
-    else:
+    if plot:
         df_nosum = df[df['Forderungstyp'] != 'Summe']
         plt.bar(df_nosum['Forderungstyp'], df_nosum['Vorkommen'])
         plt.xlabel('Forderungstyp', fontstyle='italic')
@@ -356,8 +344,6 @@ def freq_inside_spans_collection(corpus_collection, label_type,
         ax = plt.gca()
         ax.yaxis.set_major_locator(MaxNLocator(integer=True))
         plt.show()
-    else:
-        print(df)
     if export:
         df.to_csv(("freq_inside_spans_" + label_type + ".csv"),
                   index=False, decimal=',')
@@ -455,8 +441,6 @@ def roles_and_groups_collection(corpus_collection,
                            'Bezug unklar/kein Bezug'
                            ]].apply(lambda x: x / x.sum())
 
-    print(df_full)
-
     if export:
         df_full.to_csv("roles_and_groups_collection.csv",
                        index=False, decimal=',')
@@ -504,8 +488,6 @@ def association_measure_collection(corpus_collection, cat1, cat2,
                      original_value[1][1] + additional_value[1][1]]
                 ]
 
-    print(tables_df)
-
     if significance:
         columns = pd.MultiIndex.from_product([xau.possible_labels(cat2),
                                              ['Sig', 'PMI']])
@@ -530,7 +512,5 @@ def association_measure_collection(corpus_collection, cat1, cat2,
 
                 pmi_norm = xau.calculate_normalized_pmi(table)
                 am_df.loc[row_label, col_label] = pmi_norm
-
-    print(am_df)
 
     return am_df
