@@ -449,7 +449,7 @@ def roles_and_groups_collection(corpus_collection,
 
 
 def association_measure_collection(corpus_collection, cat1, cat2,
-                                   significance=True):
+                                   significance=True, export=False):
     cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                          'prot_roles', 'prot_groups', 'prot_ownother',
                          'com_functions',
@@ -470,7 +470,7 @@ def association_measure_collection(corpus_collection, cat1, cat2,
             tables_df.loc[row_label, col_label] = [[0, 0], [0, 0]]
 
     for corpus in corpus_collection.collection.values():
-        sub_df = xau.table_table(corpus, cat1, cat2)
+        sub_df = la.table_table(corpus, cat1, cat2)
         for row_label in tables_df.index:
             # Iterate over column labels
             for col_label in tables_df.columns:
@@ -512,5 +512,8 @@ def association_measure_collection(corpus_collection, cat1, cat2,
 
                 pmi_norm = xau.calculate_normalized_pmi(table)
                 am_df.loc[row_label, col_label] = pmi_norm
+
+    if export:
+        am_df.to_csv("association.csv", index=False, decimal=',')
 
     return am_df

@@ -420,7 +420,7 @@ def roles_and_groups(corpus, language, percent=False, export=False):
 
 
 def groups_and_ownother(corpus, percent=False, export=False):
-    df = la.groups_and_ownother(corpus.protagonists)
+    df = la.groups_ownother_table(corpus.protagonists)
 
     if percent:
         df[['Own Group',
@@ -457,20 +457,21 @@ def roles_and_ownother(corpus, language, percent=False, export=False):
     return df
 
 
-def association_measure(corpus, cat1, cat2, significance=True):
+def association_measure(corpus, cat1, cat2,
+                        significance=True, export=True):
     cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                          'prot_roles', 'prot_groups', 'prot_ownother',
                          'com_functions',
                          'demands']
 
     if (cat1 not in cat_possibilities or cat2 not in cat_possibilities):
-        print("Error: label_type must be one of:\n" +
+        print("Error: cat1 and cat2 must be one of:\n" +
               "\n".join(cat_possibilities))
         return
     if (cat1 in cat_possibilities[3:6] and cat2 in cat_possibilities[3:6]):
         print("It is better to use ------ here!")
 
-    tables_df = xau.table_table(corpus, cat1, cat2)
+    tables_df = la.table_table(corpus, cat1, cat2)
 
     if significance:
         columns = pd.MultiIndex.from_product([xau.possible_labels(cat2),
@@ -496,5 +497,8 @@ def association_measure(corpus, cat1, cat2, significance=True):
 
                 pmi_norm = xau.calculate_normalized_pmi(table)
                 am_df.loc[row_label, col_label] = pmi_norm
+
+    if export:
+        am_df.to_csv("association.csv", index=False, decimal=',')
 
     return am_df
