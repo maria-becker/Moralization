@@ -355,8 +355,8 @@ def roles_and_groups_collection(corpus_collection,
                                 relative=False, export=False):
     df_list = []
     for corpus in corpus_collection.collection.values():
-        sub_df = la.label_table(corpus.protagonists,
-                                corpus_collection.language)
+        sub_df = la.roles_groups_table(corpus.protagonists,
+                                       corpus_collection.language)
         df_list.append(sub_df)
 
     df_full = {
@@ -446,6 +446,64 @@ def roles_and_groups_collection(corpus_collection,
                        index=False, decimal=',')
 
     return df_full
+
+
+def groups_and_ownother_collection(corpus_collection,
+                                   percent=False,
+                                   export=False):
+
+    df_list = []
+    for corpus in corpus_collection.collection.values():
+        sub_df = la.groups_ownother_table(corpus.protagonists)
+        df_list.append(sub_df)
+
+    df = df_list[0]
+    for i in range(0, len(df_list)-1):
+        df.iloc[:, 1:] += df_list[i + 1].iloc[:, 1:]
+
+    if percent:
+        df[['Own Group',
+            'Other Group',
+            'Neutral',
+            ]] \
+            = df[['Own Group',
+                  'Other Group',
+                  'Neutral',
+                  ]].apply(lambda x: x / x.sum() * 100)
+
+    if export:
+        df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
+
+    return df
+
+
+def roles_and_ownother_collection(corpus_collection,
+                                  percent=False,
+                                  export=False):
+    df_list = []
+    for corpus in corpus_collection.collection.values():
+        sub_df = la.roles_ownother_table(corpus.protagonists,
+                                         language=corpus_collection.language)
+        df_list.append(sub_df)
+
+    df = df_list[0]
+    for i in range(0, len(df_list)-1):
+        df.iloc[:, 1:] += df_list[i + 1].iloc[:, 1:]
+
+    if percent:
+        df[['Own Group',
+            'Other Group',
+            'Neutral',
+            ]] \
+            = df[['Own Group',
+                  'Other Group',
+                  'Neutral',
+                  ]].apply(lambda x: x / x.sum() * 100)
+
+    if export:
+        df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
+
+    return df
 
 
 def association_measure_collection(corpus_collection, cat1, cat2,
