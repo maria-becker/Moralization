@@ -19,11 +19,8 @@ Functions:
     combine_dicts(dict_1, dict_2)
 """
 
-import xml.etree.ElementTree as ET
 import operator as op
-import nltk
 import xmi_analysis_util as xau
-from collections import Counter
 import pandas as pd
 
 
@@ -159,7 +156,10 @@ def groups_ownother_table(protagonists):
         }
 
     for protagonist in protagonists:
+        print(protagonist)
         ownother = protagonist["own/other"]
+        if ownother is None:
+            continue
         if protagonist["Gruppe"] == "Individuum":
             data_dict[ownother][0] += 1
         elif protagonist["Gruppe"] == "Institution":
@@ -209,6 +209,8 @@ def roles_ownother_table(protagonists, language='all'):
 
     for protagonist in protagonists:
         ownother = protagonist["own/other"]
+        if ownother is None:
+            continue
         if protagonist["Rolle"] == "Adresassat:in":
             data_dict[ownother][0] += 1
         elif protagonist["Rolle"] == "Benefizient:in":
