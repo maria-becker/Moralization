@@ -433,7 +433,7 @@ def groups_and_ownother(corpus, percent=False, export=False):
                   ]].apply(lambda x: x / x.sum() * 100)
 
     if export:
-        df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
+        df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
 
     return df
 
@@ -452,7 +452,7 @@ def roles_and_ownother(corpus, language, percent=False, export=False):
                   ]].apply(lambda x: x / x.sum() * 100)
 
     if export:
-        df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
+        df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
 
     return df
 
