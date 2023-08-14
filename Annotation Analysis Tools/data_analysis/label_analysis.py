@@ -156,7 +156,6 @@ def groups_ownother_table(protagonists):
         }
 
     for protagonist in protagonists:
-        print(protagonist)
         ownother = protagonist["own/other"]
         if ownother is None:
             continue
