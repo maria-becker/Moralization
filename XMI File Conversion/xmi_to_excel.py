@@ -110,7 +110,6 @@ def list_subj_moral_from_xmi(filepath):
 
 def list_protagonists_from_xmi(
     filepath,
-    ignore_list=None,
     skip_duplicates=False
 ):
     """
@@ -159,9 +158,6 @@ def list_protagonists_from_xmi(
                 "Protagonistinnen3"
             ]:
                 attribute_list.append(span.get(category))
-                for element in ignore_list:
-                    if element in attribute_list:
-                        ignore = True
 
             if skip_duplicates:
                 coordinates = (int(span.get("begin")), int(span.get("end")))
@@ -583,12 +579,12 @@ def extract_files(root_folder, goal_folder):
 
             if not extracted:
                 for file in os.listdir(subdir):
-                    if (file.startswith('inception-document')):
+                    if not (file.startswith('INITIAL_CAS')):
                         zip_path = os.path.join(subdir, file)
                         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                             for zip_file in zip_ref.namelist():
                                 if (zip_file.endswith('.xmi')
-                                        and zip_file[:-3] in directory):
+                                        and zip_file[:-3] in zip_path):
                                     destination_folder = os.path.join(
                                         goal_folder,
                                         directory)
