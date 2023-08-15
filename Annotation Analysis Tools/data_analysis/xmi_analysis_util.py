@@ -1,4 +1,5 @@
 import numpy as np
+import xlsxwriter
 
 
 def inside_of(coord_list, coord_tuple):
@@ -206,3 +207,22 @@ def freq_table(corpus, associations1, associations2, label1, label2):
         print("Error: Division by zero.")
 
     return contingency_table
+
+
+def list_to_excel(source_list, filepath):
+    """
+    Takes a list and writes it into the first column
+    of an excel file.
+    """
+
+    workbook = xlsxwriter.Workbook(filepath)
+    worksheet = workbook.add_worksheet("list")
+
+    row = 0
+    col = 0
+    for item in source_list:
+        worksheet.write(row, col, item)
+        row += 1
+
+    workbook.close()
+    return None
