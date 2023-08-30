@@ -261,7 +261,6 @@ def tag_label_instances(
 
     relevant_spans_dict = xau.label_associations(corpus.moralizations,
                                                  matched_anno_list)
-    print(relevant_spans_dict)
 
     return_string_list = []
     for moralization_tuple in relevant_spans_dict:

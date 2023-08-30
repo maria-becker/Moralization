@@ -226,3 +226,27 @@ def list_to_excel(source_list, filepath):
 
     workbook.close()
     return None
+
+
+def dict_to_excel(source_dict, filepath):
+    workbook = xlsxwriter.Workbook(filepath)
+    worksheet = workbook.add_worksheet("list")
+
+    row = 0
+    col = 0
+    bold = workbook.add_format({'bold': True})
+
+    keys_list = list(source_dict.keys())
+
+    for key in keys_list:
+        worksheet.write(row, col, key, bold)
+        row += 1
+        for item in source_dict[key]:
+            worksheet.write(row, col, item)
+            row += 1
+        if key != keys_list[-1]:
+            worksheet.write(row, col, "", bold)
+            row += 1
+
+    workbook.close()
+    return None
