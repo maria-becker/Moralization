@@ -250,3 +250,18 @@ def dict_to_excel(source_dict, filepath):
 
     workbook.close()
     return None
+
+
+def valid_category(category):
+
+    possible_categories = ['obj_morals', 'subj_morals', 'all_morals',
+                           'protagonists', 'protagonists_doubles',
+                           'com_functions',
+                           'expl_demands', 'impl_demands', 'all_demands']
+
+    if category not in possible_categories:
+        print("Error: label_type must be one of:\n" +
+              "\n".join(possible_categories))
+        return False
+
+    return True

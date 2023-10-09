@@ -11,14 +11,7 @@ def lemma_label_instances(
     language="ger",
     export=False
 ):
-
-    possible_labels = ['obj_morals', 'subj_morals', 'all_morals',
-                       'protagonists', 'protagonists_doubles',
-                       'com_functions',
-                       'expl_demands', 'impl_demands', 'all_demands']
-    if label_type not in possible_labels:
-        print("Error: label_type must be one of:\n" +
-              "\n".join(possible_labels))
+    if not xau.valid_category(label_type):
         return
 
     label = getattr(corpus, label_type)
@@ -84,14 +77,9 @@ def poslist_label_instances(
     export=False
 ):
 
-    label_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
-                           'protagonists', 'protagonists_doubles',
-                           'com_functions',
-                           'expl_demands', 'impl_demands', 'all_demands']
-    if label_type not in label_possibilities:
-        print("Error: label_type must be one of:\n" +
-              "\n".join(label_possibilities))
+    if not xau.valid_category(label_type):
         return
+
     label = getattr(corpus, label_type)
 
     association = xau.label_associations_category(
@@ -187,13 +175,20 @@ def pos_label_instances(
     language="ger",
     export=False
 ):
-    return poslist_label_instances(
+
+    hits_list = poslist_label_instances(
         corpus,
         [pos],
         label_type,
         language,
-        export
+        export=False
     )
+
+    if export:
+        xau.list_to_excel(hits_list,
+                          f"[{pos}_{label_type}_instances.xlsx")
+
+    return hits_list
 
 
 def count_label_instances(
@@ -203,14 +198,9 @@ def count_label_instances(
     export=False
 ):
 
-    label_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
-                           'protagonists', 'protagonists_doubles',
-                           'com_functions',
-                           'expl_demands', 'impl_demands', 'all_demands']
-    if label_type not in label_possibilities:
-        print("Error: label_type must be one of:\n" +
-              "\n".join(label_possibilities))
+    if not xau.valid_category(label_type):
         return
+
     label = getattr(corpus, label_type)
 
     association = xau.label_associations(
@@ -251,15 +241,11 @@ def tag_label_instances(
     export=False
 ):
 
-    text = corpus.text
-    label_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
-                           'protagonists', 'protagonists_doubles',
-                           'com_functions',
-                           'expl_demands', 'impl_demands', 'all_demands']
-    if label_type not in label_possibilities:
-        print("Error: label_type must be one of:\n" +
-              "\n".join(label_possibilities))
+    if not xau.valid_category(label_type):
         return
+
+    text = corpus.text
+
     labels = getattr(corpus, label_type)
 
     matched_anno_list = []
