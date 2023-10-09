@@ -167,6 +167,7 @@ def pos_label_instances(
     pos,
     label_type,
     language="ger",
+    hanta=False,
     export=False
 ):
 
@@ -175,6 +176,7 @@ def pos_label_instances(
         [pos],
         label_type,
         language,
+        hanta,
         export=False
     )
 

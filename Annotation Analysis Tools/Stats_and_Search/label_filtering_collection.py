@@ -17,6 +17,7 @@ def word_label_instances_collection(
     corpus_collection,
     word,
     label_type,
+    hanta=False,
     export=False
 ):
     output_dict = {}
@@ -26,6 +27,7 @@ def word_label_instances_collection(
             word,
             label_type,
             language=corpus_collection.language,
+            hanta=hanta,
             export=False
         )
 
@@ -40,6 +42,7 @@ def pos_label_instances_collection(
     corpus_collection,
     pos,
     label_type,
+    hanta=False,
     export=False
 ):
     output_dict = {}
@@ -49,6 +52,7 @@ def pos_label_instances_collection(
             pos,
             label_type,
             language=corpus_collection.language,
+            hanta=hanta,
             export=False
         )
 
@@ -63,6 +67,7 @@ def poslist_label_instances_collection(
     corpus_collection,
     pos_list,
     label_type,
+    hanta=False,
     export=False
 ):
     output_dict = {}
@@ -72,6 +77,7 @@ def poslist_label_instances_collection(
             pos_list,
             label_type,
             language=corpus_collection.language,
+            hanta=hanta,
             export=False
         )
 
