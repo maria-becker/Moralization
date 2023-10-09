@@ -13,9 +13,9 @@ def print_dict(dictionary):
     return
 
 
-def word_label_instances_collection(
+def lemma_label_instances_collection(
     corpus_collection,
-    word,
+    lemma,
     label_type,
     hanta=False,
     export=False
@@ -24,7 +24,7 @@ def word_label_instances_collection(
     for corpus in corpus_collection.collection.keys():
         output_dict[corpus] = lfs.word_label_instances(
             corpus_collection.collection[corpus],
-            word,
+            lemma,
             label_type,
             language=corpus_collection.language,
             hanta=hanta,
@@ -33,7 +33,7 @@ def word_label_instances_collection(
 
     if export:
         xau.dict_to_excel(output_dict,
-                          f"{word}_{label_type}_instances.xlsx")
+                          f"{lemma}_{label_type}_instances.xlsx")
 
     return output_dict
 
