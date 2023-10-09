@@ -8,7 +8,8 @@ def lemma_label_instances(
     corpus,
     lemma,
     label_type,
-    language="ger",
+    language="de",
+    hanta=False,
     export=False
 ):
     if not xau.valid_category(label_type):
@@ -23,11 +24,11 @@ def lemma_label_instances(
 
     relevant_spans_list = []
 
-    if language == "ger" or language == "en":
+    if (language == "de" or language == "en") and hanta:
 
         tagger = ht.HanoverTagger(f'morphmodel_{language}.pgz')
 
-        if language == "ger":
+        if language == "de":
             language = "german"
         elif language == "en":
             language = "english"
@@ -42,12 +43,9 @@ def lemma_label_instances(
                         relevant_spans_list.append(moralization)
                         break
 
-    if language == "fr" or language == "it":
+    else:
 
-        if language == "fr":
-            model = spacy.load('fr_core_news_md')
-        elif language == "it":
-            model = spacy.load('it_core_news_md')
+        model = spacy.load(f'{language}_core_news_md')
 
         for moralization in association.keys():
             for protagonist in association[moralization]:
@@ -73,7 +71,8 @@ def poslist_label_instances(
     corpus,
     pos_list,
     label_type,
-    language="ger",
+    language="de",
+    hanta=False,
     export=False
 ):
 
@@ -89,11 +88,11 @@ def poslist_label_instances(
 
     relevant_spans_dict = {}
 
-    if language == "ger" or language == "en":
+    if (language == "de" or language == "en") and hanta:
 
         tagger = ht.HanoverTagger(f'morphmodel_{language}.pgz')
 
-        if language == "ger":
+        if language == "de":
             language = "german"
         elif language == "en":
             language = "english"
@@ -120,14 +119,9 @@ def poslist_label_instances(
         relevant_spans_dict = xau.label_associations(corpus.moralizations,
                                                      relevant_spans_list)
 
-    if language == "fr" or language == "it":
+    else:
 
-        if language == "fr":
-            model = spacy.load('fr_core_news_md')
-        elif language == "it":
-            model = spacy.load('it_core_news_md')
-
-        relevant_spans_list = []
+        model = spacy.load(f'{language}_core_news_md')
 
         for moralization in association.keys():
 
