@@ -90,12 +90,14 @@ def poslist_label_instances(
 
     if (language == "de" or language == "en") and hanta:
 
-        tagger = ht.HanoverTagger(f'morphmodel_{language}.pgz')
+        if (language == "de" or language == "en") and hanta:
 
-        if language == "de":
-            language = "german"
-        elif language == "en":
-            language = "english"
+            if language == "de":
+                tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+                language = 'german'
+            elif language == "en":
+                tagger = ht.HanoverTagger('morphmodel_en.pgz')
+                language = 'english'
 
         relevant_spans_list = []
 
