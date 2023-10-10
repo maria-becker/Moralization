@@ -103,7 +103,7 @@ def list_moralizations_from_xmi(filepath):
 
 def list_protagonists_from_xmi(
     filepath,
-    ignore_list=[],
+    ignore_list=None,
     skip_duplicates=False
 ):
     """
@@ -130,6 +130,9 @@ def list_protagonists_from_xmi(
     Returns:
         List of dictionaries as described above.
     """
+
+    if ignore_list is None:
+        ignore_list = []
 
     # Open the XMI file
     tree = ET.parse(filepath)

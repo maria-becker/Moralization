@@ -26,17 +26,17 @@ def lemma_label_instances(
 
     if (language == "de" or language == "en") and hanta:
 
-        tagger = ht.HanoverTagger(f'morphmodel_{language}.pgz')
-
         if language == "de":
-            language = "german"
+            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+            language = 'german'
         elif language == "en":
-            language = "english"
+            tagger = ht.HanoverTagger('morphmodel_en.pgz')
+            language = 'english'
 
-        for moralization in association.keys():
-            for protagonist in association[moralization]:
+        for moralization, instances in association.items():
+            for instance in instances:
                 tokenized = nltk.tokenize.word_tokenize(
-                    xau.get_span(corpus.text, protagonist), language=language)
+                    xau.get_span(corpus.text, instance), language=language)
                 tags = tagger.tag_sent(tokenized)
                 for tag in tags:
                     if tag[1] == lemma:
@@ -47,9 +47,9 @@ def lemma_label_instances(
 
         model = spacy.load(f'{language}_core_news_md')
 
-        for moralization in association.keys():
-            for protagonist in association[moralization]:
-                doc = model(xau.get_span(corpus.text, protagonist))
+        for moralization, instances in association.items():
+            for instance in instances:
+                doc = model(xau.get_span(corpus.text, instance))
                 for token in doc:
                     if token.lemma_ == lemma:
                         relevant_spans_list.append(moralization)
@@ -99,60 +99,50 @@ def poslist_label_instances(
 
         relevant_spans_list = []
 
-        for moralization in association.keys():
-
-            for protagonist in association[moralization]:
-
+        for moralization, instances in association.items():
+            for instance in instances:
                 tokenized = nltk.tokenize.word_tokenize(
                     xau.get_span(corpus.text, moralization), language=language)
                 tags = tagger.tag_sent(tokenized)
 
                 for tag in tags:
-
                     if tag[2] in pos_list and tag[0].lower() in xau.get_span(
-                                corpus.text, protagonist["Coordinates"]
+                                corpus.text, instance["Coordinates"]
                                 ).lower():
-
-                        relevant_spans_list.append(protagonist)
+                        relevant_spans_list.append(instance)
                         break
-
-        relevant_spans_dict = xau.label_associations(corpus.moralizations,
-                                                     relevant_spans_list)
 
     else:
 
         model = spacy.load(f'{language}_core_news_md')
 
-        for moralization in association.keys():
-
-            for protagonist in association[moralization]:
-
+        for moralization, instances in association.items():
+            for instance in instances:
                 doc = model(xau.get_span(corpus.text, moralization))
 
                 for tag in doc:
-
-                    if tag.pos_ in pos_list and tag.text() in xau.get_span(
+                    if tag.pos_ in pos_list and tag.text in xau.get_span(
                                 corpus.text,
-                                protagonist["Coordinates"])():
-
-                        relevant_spans_list.append(protagonist)
+                                instance["Coordinates"]):
+                        relevant_spans_list.append(instance)
                         break
 
-        relevant_spans_dict = xau.label_associations(corpus.moralizations,
-                                                     relevant_spans_list)
+    relevant_spans_dict = xau.label_associations(corpus.moralizations,
+                                                 relevant_spans_list)
 
     text = corpus.text
     return_string_list = []
-    for moralization_tuple in relevant_spans_dict:
-        if relevant_spans_dict[moralization_tuple] != []:
-            for protagonist in relevant_spans_dict[moralization_tuple]:
-                if xau.get_span(text, protagonist):
+
+    for moralization, relevant_instances in relevant_spans_dict.items():
+        if relevant_instances != []:
+            for instance in relevant_instances:
+                if xau.get_span(text, instance):
                     text = (
-                        text[:(protagonist[0])]
-                        + xau.special_upper(xau.get_span(text, protagonist))
-                        + text[(protagonist[1]):]
+                        text[:(instance[0])]
+                        + xau.special_upper(xau.get_span(text, instance))
+                        + text[(instance[1]):]
                     )
-            output_string = xau.get_span(text, moralization_tuple)
+            output_string = xau.get_span(text, moralization)
             return_string_list.append(output_string)
 
     if export:
@@ -205,9 +195,9 @@ def count_label_instances(
     )
 
     relevant_spans_dict = {
-        key: association[key] for key
-        in association.keys()
-        if len(association[key]) == count
+        key: entry for key, entry
+        in association.items()
+        if len(entry) == count
     }
 
     text = corpus.text
@@ -253,16 +243,16 @@ def tag_label_instances(
                                                  matched_anno_list)
 
     return_string_list = []
-    for moralization_tuple in relevant_spans_dict:
-        if relevant_spans_dict[moralization_tuple] != []:
-            for protagonist in relevant_spans_dict[moralization_tuple]:
-                if xau.get_span(text, protagonist):
-                    text = (
-                        text[:(protagonist[0])]
-                        + xau.special_upper(xau.get_span(text, protagonist))
-                        + text[(protagonist[1]):]
-                    )
-            output_string = xau.get_span(text, moralization_tuple)
+    for moralization, relevant_instances in relevant_spans_dict.items():
+        if relevant_instances != []:
+            for instance in relevant_instances:
+                if xau.get_span(text, instance):
+                    text = "".join((
+                        text[:(instance[0])],
+                        xau.special_upper(xau.get_span(text, instance)),
+                        text[(instance[1]):]
+                    ))
+            output_string = xau.get_span(text, moralization)
             return_string_list.append(output_string)
 
     if export:

@@ -71,7 +71,7 @@ def moral_values_freq(corpus, moral_type="all",
         df = temp_df
 
     total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
+    df['Anteil'] = df['Vorkommen'] / total
 
     # Create a new row with the 'sum' values
     sum_df = pd.DataFrame({
@@ -117,7 +117,7 @@ def protagonist_role_freq(corpus, language, plot=False, export=False):
             df.loc[df['Rolle'] == protagonist['Rolle'], 'Vorkommen'] += 1
 
     total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
+    df['Anteil'] = df['Vorkommen'] / total
 
     # Create a new row with the 'sum' values
     sum_df = pd.DataFrame({
@@ -169,7 +169,7 @@ def protagonist_group_freq(corpus, plot=False, export=False):
             df.loc[df['Gruppe'] == protagonist['Gruppe'], 'Vorkommen'] += 1
 
     total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
+    df['Anteil'] = df['Vorkommen'] / total
 
     # Create a new row with the 'sum' values
     sum_df = pd.DataFrame({
@@ -260,7 +260,7 @@ def comfunction_freq(corpus, language, plot=False, export=False):
                 'Vorkommen'] += 1
 
     total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
+    df['Anteil'] = df['Vorkommen'] / total
 
     # Create a new row with the 'sum' values
     sum_df = pd.DataFrame({
