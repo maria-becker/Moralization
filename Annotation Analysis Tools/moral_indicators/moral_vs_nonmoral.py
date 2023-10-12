@@ -10,12 +10,10 @@ spans_path = (
     r"\Data_Jypiter\Spans_and_instances.xlsx"
 )
 positive_path = (
-    r"C:\Users\Arbeit\Desktop\Bachelorarbeit\Data"
-    r"\Kategorisierungen\Alle_bearbeiteten_Annotationen_positiv_final.xlsx"
+    "/home/bruno/Desktop/Databases/Alle_bearbeiteten_Annotationen_negativ_final.xlsx"
 )
 negative_path = (
-    r"C:\Users\Arbeit\Desktop\Bachelorarbeit\Data"
-    r"\Kategorisierungen\Alle_bearbeiteten_Annotationen_negativ_final.xlsx"
+    "/home/bruno/Desktop/Databases/Alle_bearbeiteten_Annotationen_negativ_final.xlsx"
 )
 relev_textsorten_dict = {
     "Leserbriefe": ["Column4", "Column13"],
@@ -50,17 +48,14 @@ def nonmoral_df(sheet_name, categories):
 
     dataframe_list = [df_neg, df_pos]
 
-    # Create two empty dataframes
     nonmoral_df = pd.DataFrame()
 
     # Loop through the rows in the dataframe
     for df in dataframe_list:
         for index, row in df.iterrows():
             # Check the value in the second column
-            if row[1] in categories:
-                # Add the row to the second dataframe
-                if index % 2 == 1:
-                    nonmoral_df = nonmoral_df.append(row)
+            if row[1] in categories and index % 2 == 1:
+                nonmoral_df = nonmoral_df.append(row)
 
     return nonmoral_df
 
@@ -174,7 +169,7 @@ def get_stats(
 def count_instances_lemma(
     moralization_list,
     thema_df,
-    comparison_list
+    lemmata_list
 ):
     counter_moral_prot = 0
     counter_moral_n = 0
@@ -199,9 +194,9 @@ def count_instances_lemma(
             row[0], language='german')
         tags = tagger.tag_sent(tokenized_sents)
         for tag in tags:
-            if tag[1] in comparison_list:
+            if tag[1] in lemmata_list:
                 counter_them_prot += 1
-            counter_them_n += 1
+            counter_them_ndds += 1
     
     return (
         counter_moral_prot,
@@ -209,6 +204,47 @@ def count_instances_lemma(
         counter_them_prot,
         counter_them_n,
     )
+
+
+def count_instances_pos(
+    moralization_list,
+    thema_df,
+    pos_list
+):
+    counter_moral_prot = 0
+    counter_moral_n = 0
+    counter_them_prot = 0
+    counter_them_n = 0
+
+    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+
+    # Loop through the rows in the dataframe of moralizing segments
+    for morali in moralisierung_list:
+        tokenized_sents = nltk.tokenize.word_tokenize(
+            morali, language='german')
+        tags = tagger.tag_sent(tokenized_sents)
+        for tag in tags:
+            if tag[2] in pos_list:
+                counter_moral_prot += 1
+            counter_moral_n += 1
+
+    # Loop through the rows in the dataframe of non-moralizing segments
+    for index, row in df_thema.iterrows():
+        tokenized_sents = nltk.tokenize.word_tokenize(
+            row[0], language='german')
+        tags = tagger.tag_sent(tokenized_sents)
+        for tag in tags:
+            if tag[2] in pos_list:
+                counter_them_prot += 1
+            counter_them_n += 1
+
+    return (
+        counter_moral_prot,
+        counter_moral_n,
+        counter_them_prot,
+        counter_them_n,
+    )  
+
 
 
 def compare_lemma_likelihood(
@@ -224,7 +260,11 @@ def compare_lemma_likelihood(
     df_thema = nonmoral_df(sheet_name, nonmoral_categories)
     moralisierung_list = moral_list(sheet_name)
 
-    counts = count_instances_lemma(moralisierung_list, df_thema)
+    counts = count_instances_lemma(
+        moralisierung_list,
+        df_thema,
+        comparison_list
+    )
 
     results = get_stats(
         counts[0],
@@ -254,67 +294,23 @@ def compare_pos_likelihood(
     # Get moralizing spans SSC excel sheets
     moralisierung_list = moral_list(sheet_name)
 
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
+    counts = count_instances_pos(
+        moralisierung_list,
+        df_thema,
+        pos_list
+        )
 
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[2] in pos_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[2] in pos_list:
-                counter_them_prot += 1
-            counter_them_n += 1
-
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    likelihood_moral = counter_moral_prot / counter_moral_n
-    likelihood_them = counter_them_prot / counter_them_n
-
-    contingency_table = [
-        [counter_moral_prot, counter_moral_n - counter_moral_prot],
-        [counter_them_prot, counter_them_n - counter_them_prot]
-    ]
-    print(contingency_table)
-
-    res = stats.fisher_exact(contingency_table)
-
-    print("\nLIKELIHOOD MORAL (Prozent): ", str(likelihood_moral * 100))
-    print("LIKELIHOOD THEM  (Prozent): ", str(likelihood_them * 100))
-
-    ratio = (
-            likelihood_moral
-            / likelihood_them
-    )
-    diff_coeficient = (
-        (likelihood_moral - likelihood_them)
-        / (likelihood_moral + likelihood_them)
+    results = get_stats(
+        counts[0],
+        counts[1],
+        counts[2],
+        counts[3]
     )
 
-    try:
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF OLD: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
+    for stat, value in results.items():
+        print(stat, value)
 
-    return 0
+    return results
 
 
 def compare_lemma_likelihood_dict(
