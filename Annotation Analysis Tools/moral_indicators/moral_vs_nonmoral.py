@@ -171,27 +171,17 @@ def get_stats(
         return None
 
 
-def compare_lemma_likelihood(
-    sheet_name,
-    comparison_list,
-    nonmoral_categories=[0]
+def count_instances_lemma(
+    moralization_list,
+    thema_df,
+    comparison_list
 ):
-    """
-    This function compares moralizing and non-moralizing segments.
-    In particular, it calculates the frequency of 'protagonist' terms
-    """
-
-    df_thema = nonmoral_df(sheet_name, nonmoral_categories)
-    moralisierung_list = moral_list(sheet_name)
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    print("COMPARISON LIST (MANUAL): ", str(comparison_list))
-
     counter_moral_prot = 0
     counter_moral_n = 0
     counter_them_prot = 0
     counter_them_n = 0
+
+    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
 
     # Loop through the rows in the dataframe of moralizing segments
     for morali in moralisierung_list:
@@ -212,12 +202,35 @@ def compare_lemma_likelihood(
             if tag[1] in comparison_list:
                 counter_them_prot += 1
             counter_them_n += 1
-
-    results = get_stats(
+    
+    return (
         counter_moral_prot,
         counter_moral_n,
         counter_them_prot,
-        counter_them_n
+        counter_them_n,
+    )
+
+
+def compare_lemma_likelihood(
+    sheet_name,
+    comparison_list,
+    nonmoral_categories=[0]
+):
+    """
+    This function compares moralizing and non-moralizing segments.
+    In particular, it calculates the frequency of 'protagonist' terms
+    """
+
+    df_thema = nonmoral_df(sheet_name, nonmoral_categories)
+    moralisierung_list = moral_list(sheet_name)
+
+    counts = count_instances_lemma(moralisierung_list, df_thema)
+
+    results = get_stats(
+        counts[0],
+        counts[1],
+        counts[2],
+        counts[3]
     )
 
     for stat, value in results.items():
