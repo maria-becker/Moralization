@@ -1,10 +1,8 @@
 import pandas as pd
 from HanTa import HanoverTagger as ht
-import re
 import nltk
 import scipy.stats as stats
 import xlsxwriter
-import numpy as np
 
 
 spans_path = (
@@ -127,6 +125,52 @@ def get_comparison_list(
     return comparison_list
 
 
+def get_stats(
+        counter_moral_prot,
+        counter_moral_n,
+        counter_them_prot,
+        counter_them_n
+):
+
+    try:
+        likelihood_moral = counter_moral_prot / counter_moral_n
+        likelihood_them = counter_them_prot / counter_them_n
+
+        not_prot_moral = counter_moral_n - counter_moral_prot
+        not_prot_them = counter_them_n - counter_them_prot
+
+        contingency_table = [
+            [counter_moral_prot, not_prot_moral],
+            [counter_them_prot, not_prot_them]
+        ]
+
+        res = stats.fisher_exact(contingency_table)
+
+        ratio = (
+            likelihood_moral
+            / likelihood_them
+        )
+        diff_coeficient = (
+            (likelihood_moral - likelihood_them)
+            / (likelihood_moral + likelihood_them)
+        )
+
+        statistics = {
+            "likelihood_moral": likelihood_moral,
+            "likelihood_them": likelihood_them,
+            "diff_coeficient": diff_coeficient,
+            "ratio": ratio,
+            "pfisher": res.pvalue,
+            "table": contingency_table
+        }
+
+        return statistics
+
+    except ZeroDivisionError:
+        print("Error: Division by zero.")
+        return None
+
+
 def compare_lemma_likelihood(
     sheet_name,
     comparison_list,
@@ -137,9 +181,7 @@ def compare_lemma_likelihood(
     In particular, it calculates the frequency of 'protagonist' terms
     """
 
-    # Get nonmoral spans from excel sheets
     df_thema = nonmoral_df(sheet_name, nonmoral_categories)
-    # Get moralizing spans SSC excel sheets
     moralisierung_list = moral_list(sheet_name)
 
     tagger = ht.HanoverTagger('morphmodel_ger.pgz')
@@ -171,42 +213,17 @@ def compare_lemma_likelihood(
                 counter_them_prot += 1
             counter_them_n += 1
 
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    try:
-        likelihood_moral = counter_moral_prot / counter_moral_n
-        likelihood_them = counter_them_prot / counter_them_n
+    results = get_stats(
+        counter_moral_prot,
+        counter_moral_n,
+        counter_them_prot,
+        counter_them_n
+    )
 
-        not_prot_moral = counter_moral_n - counter_moral_prot
-        not_prot_them = counter_them_n - counter_them_prot
+    for stat, value in results.items():
+        print(stat, value)
 
-        contingency_table = [
-            [counter_moral_prot, not_prot_moral],
-            [counter_them_prot, not_prot_them]
-        ]
-
-        res = stats.fisher_exact(contingency_table)
-
-        print("\nLIKELIHOOD MORAL (Percent): ", str(likelihood_moral * 100))
-        print("LIKELIHOOD THEM  (Percent): ", str(likelihood_them * 100))
-
-        ratio = (
-            likelihood_moral
-            / likelihood_them
-        )
-        diff_coeficient = (
-            (likelihood_moral - likelihood_them)
-            / (likelihood_moral + likelihood_them)
-        )
-
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-
-    return None
+    return results
 
 
 def compare_pos_likelihood(
