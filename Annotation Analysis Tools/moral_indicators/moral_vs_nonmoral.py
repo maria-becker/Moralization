@@ -225,102 +225,77 @@ def get_stats(
 
 
 def count_instances_lemma(
-    moralization_list,
-    thema_df,
+    text_list,
     lemmata_list,
+    language='german',
     dictionary_mode=False,
 ):
 
-    comparison_dict = {k: [0, 0] for k in comparison_list}  # [moral, nonmoral]
-    comparison_dict["total_"] = [0, 0]  # [moral, nonmoral]
+    comparison_dict = {lemma: 0 for lemma in lemmata_list}
+    comparison_dict["_total_"] = 0
 
     tagger = ht.HanoverTagger('morphmodel_ger.pgz')
 
     # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
+    for doc in text_list:
         tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
+            doc, language=language)
         tags = tagger.tag_sent(tokenized_sents)
         for tag in tags:
-            comparison_dict["total_"][0] += 1
+            comparison_dict["_total_"] += 1
             if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][0] += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            comparison_dict["total_"][1] += 1
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][1] += 1
+                comparison_dict[tag[1]] += 1
 
     if not dictionary_mode:
-        sum(1)
-        comparison_dict = {
-            "total_": comparison_dict[total],
-            "instances": []
-        }
+        return(
+            comparison_dict.pop("_total_"),
+            sum(comparison_dict.values())
+        )
 
-    return (
-
-    )
+    return comparison_dict
 
 
 def count_instances_pos(
-    moralization_list,
-    thema_df,
+    text_list,
     pos_list,
-    dictionary_mode=False
+    language='german',
+    dictionary_mode=False,
 ):
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
+
+    comparison_dict = {pos: 0 for pos in pos_list}
+    comparison_dict["_total_"] = 0
 
     tagger = ht.HanoverTagger('morphmodel_ger.pgz')
 
     # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
+    for doc in text_list:
         tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
+            doc, language=language)
         tags = tagger.tag_sent(tokenized_sents)
         for tag in tags:
-            if tag[2] in pos_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
+            comparison_dict["_total_"] += 1
+            if tag[2] in comparison_dict.keys():
+                comparison_dict[tag[2]] += 1
 
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[2] in pos_list:
-                counter_them_prot += 1
-            counter_them_n += 1
+    if not dictionary_mode:
+        return(
+            comparison_dict.pop("_total_"),
+            sum(comparison_dict.values())
+        )
 
-    return (
-        counter_moral_prot,
-        counter_moral_n,
-        counter_them_prot,
-        counter_them_n,
-    )  
+    return comparison_dict 
 
 
 def compare_lemma_likelihood(
-    sheet_name,
-    comparison_list,
+    moral_list,
+    nonmoral_list,
+    lemmata,
     nonmoral_categories=[0]
 ):
     """
     This function compares moralizing and non-moralizing segments.
     In particular, it calculates the frequency of 'protagonist' terms
     """
-
-    df_thema = nonmoral_df(sheet_name, nonmoral_categories)
-    moralisierung_list = moral_list(sheet_name)
 
     counts = count_instances_lemma(
         moralisierung_list,
