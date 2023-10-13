@@ -210,11 +210,10 @@ def get_stats(
 
         statistics = {
             "likelihood_moral": likelihood_moral,
-            "likelihood_them": likelihood_them,
-            "diff_coeficient": diff_coeficient,
+            "likelihood_nonmoral": likelihood_them,
             "ratio": ratio,
-            "pfisher": res.pvalue,
-            "table": contingency_table
+            "diff_coeficient": diff_coeficient,
+            "pvalue_fisher": res.pvalue,
         }
 
         return statistics
@@ -227,8 +226,8 @@ def get_stats(
 def count_instances_lemma(
     text_list,
     lemmata_list,
+    combined_mode,
     language='german',
-    dictionary_mode=False,
 ):
 
     comparison_dict = {lemma: 0 for lemma in lemmata_list}
@@ -246,11 +245,12 @@ def count_instances_lemma(
             if tag[1] in comparison_dict.keys():
                 comparison_dict[tag[1]] += 1
 
-    if not dictionary_mode:
-        return(
-            comparison_dict.pop("_total_"),
-            sum(comparison_dict.values())
-        )
+    if combined_mode:
+        combined_dict = {
+            "_total_": comparison_dict.pop("_total_")
+        }
+        combined_dict[tuple(lemmata_list)] = sum(comparison_dict.values())
+        return combined_dict
 
     return comparison_dict
 
@@ -258,8 +258,8 @@ def count_instances_lemma(
 def count_instances_pos(
     text_list,
     pos_list,
+    combined_mode,
     language='german',
-    dictionary_mode=False,
 ):
 
     comparison_dict = {pos: 0 for pos in pos_list}
@@ -277,37 +277,45 @@ def count_instances_pos(
             if tag[2] in comparison_dict.keys():
                 comparison_dict[tag[2]] += 1
 
-    if not dictionary_mode:
-        return(
-            comparison_dict.pop("_total_"),
-            sum(comparison_dict.values())
-        )
+    if combined_mode:
+        combined_dict = {
+            "_total_": comparison_dict.pop("_total_")
+        }
+        combined_dict[tuple(pos_list)] = sum(comparison_dict.values())
+        return combined_dict
 
-    return comparison_dict 
+    return comparison_dict
 
 
 def compare_lemma_likelihood(
     moral_list,
     nonmoral_list,
     lemmata,
-    nonmoral_categories=[0]
+    language="german"
 ):
     """
     This function compares moralizing and non-moralizing segments.
     In particular, it calculates the frequency of 'protagonist' terms
     """
 
-    counts = count_instances_lemma(
-        moralisierung_list,
-        df_thema,
-        comparison_list
+    moral_counts = count_instances_lemma(
+        moral_list,
+        lemmata,
+        combined_mode=True,
+        language=language,
+    )
+    nonmoral_counts = count_instances_lemma(
+        nonmoral_list,
+        lemmata,
+        combined_mode=True,
+        language=language
     )
 
     results = get_stats(
-        counts[0],
-        counts[1],
-        counts[2],
-        counts[3]
+        moral_counts[tuple(lemmata)],
+        moral_counts["_total_"],
+        nonmoral_counts[tuple(lemmata)],
+        nonmoral_counts["_total_"]
     )
 
     for stat, value in results.items():
@@ -317,31 +325,34 @@ def compare_lemma_likelihood(
 
 
 def compare_pos_likelihood(
-    sheet_name,
+    moral_list,
+    nonmoral_list,
     pos_list,
-    categories=[0]
+    language='german'
 ):
     """
     This function compares moralizing and non-moralizing segments.
     In particular, it calculates the frequency of 'protagonist' terms
     """
 
-    # Get nonmoral spans from excel sheets
-    df_thema = nonmoral_df(sheet_name, categories)
-    # Get moralizing spans SSC excel sheets
-    moralisierung_list = moral_list(sheet_name)
-
-    counts = count_instances_pos(
-        moralisierung_list,
-        df_thema,
-        pos_list
-        )
+    moral_counts = count_instances_pos(
+        moral_list,
+        pos_list,
+        combined_mode=True,
+        language=language,
+    )
+    nonmoral_counts = count_instances_pos(
+        nonmoral_list,
+        pos_list,
+        combined_mode=True,
+        language=language
+    )
 
     results = get_stats(
-        counts[0],
-        counts[1],
-        counts[2],
-        counts[3]
+        moral_counts[tuple(pos_list)],
+        moral_counts["_total_"],
+        nonmoral_counts[tuple(pos_list)],
+        nonmoral_counts["_total_"],
     )
 
     for stat, value in results.items():
@@ -351,84 +362,76 @@ def compare_pos_likelihood(
 
 
 def compare_lemma_likelihood_dict(
-    sheet_name=0,
-    comparison_list=0,
-    categories=[0]
+    moral_list,
+    nonmoral_list,
+    lemmata,
+    language="german"
 ):
     """
     This function compares moralizing and non-moralizing segments.
     In particular, it calculates the frequency of 'protagonist' terms
     """
 
-    # Get nonmoral spans from excel sheets
-    df_thema = nonmoral_df(sheet_name, categories)
-    # Get moralizing spans SSC excel sheets
-    moralisierung_list = moral_list(sheet_name)
+    moral_counts = count_instances_lemma(
+        moral_list,
+        lemmata,
+        combined_mode=False,
+        language=language,
+    )
+    nonmoral_counts = count_instances_lemma(
+        nonmoral_list,
+        lemmata,
+        combined_mode=False,
+        language=language
+    )
 
-    comparison_dict = {k: None for k in comparison_list}
-    for key in comparison_dict:
-        comparison_dict[key] = [0, 0]   # [counter_moral, counter_them]
-
-    # Print just to be sure
-    print("COMPARISON DICT: ", str(comparison_dict))
-
-    counter_moral_n = 0
-    counter_them_n = 0
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][0] += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][1] += 1
-            counter_them_n += 1
-
-    results_dict = {k: None for k in comparison_dict.keys()}
-    for lemma in results_dict:
-        counter_moral_prot = comparison_dict[lemma][0]
-        counter_them_prot = comparison_dict[lemma][1]
-        likelihood_moral = counter_moral_prot / counter_moral_n
-        likelihood_them = counter_them_prot / counter_them_n
-
-        contingency_table = [
-            [counter_moral_prot, counter_moral_n - counter_moral_prot],
-            [counter_them_prot, counter_them_n - counter_them_prot]
-        ]
-
-        res = stats.fisher_exact(contingency_table)
-
-        ratio = None
-        diff_coeficient = (
-            (likelihood_moral - likelihood_them)
-            / (likelihood_moral + likelihood_them)
+    results_dict = {}
+    for lemma in lemmata:
+        results_dict[lemma] = get_stats(
+            moral_counts[lemma],
+            moral_counts["_total_"],
+            nonmoral_counts[lemma],
+            nonmoral_counts["_total_"]
         )
-        try:
-            # Compare the likelihoods
-            ratio = likelihood_moral / likelihood_them
-        except ZeroDivisionError:
-            ratio = False
-
-        results_dict[lemma] = {
-            "ratio": ratio,
-            "diff_co": diff_coeficient,
-            "pvalue": res.pvalue
-        }
 
     return results_dict
+
+
+def compare_pos_likelihood_dict(
+    moral_list,
+    nonmoral_list,
+    pos_list,
+    language="german"
+):
+    """
+    This function compares moralizing and non-moralizing segments.
+    In particular, it calculates the frequency of 'protagonist' terms
+    """
+
+    moral_counts = count_instances_pos(
+        moral_list,
+        pos_list,
+        combined_mode=False,
+        language=language,
+    )
+    nonmoral_counts = count_instances_pos(
+        nonmoral_list,
+        pos_list,
+        combined_mode=False,
+        language=language
+    )
+
+    results_dict = {}
+    for pos in pos_list:
+        results_dict[pos] = get_stats(
+            moral_counts[pos],
+            moral_counts["_total_"],
+            nonmoral_counts[pos],
+            nonmoral_counts["_total_"]
+        )
+
+    return results_dict
+
 
 
 def compare_lemma_likelihood_fulltexts(
