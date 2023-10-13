@@ -3,64 +3,41 @@ from HanTa import HanoverTagger as ht
 import nltk
 import scipy.stats as stats
 import xlsxwriter
+import xml.etree.ElementTree as ET
 
 
-spans_path = (
-    r"C:\Users\Arbeit\Desktop\Bachelorarbeit\Data"
-    r"\Data_Jypiter\Spans_and_instances.xlsx"
-)
-positive_path = (
-    "/home/bruno/Desktop/Databases/Alle_bearbeiteten_Annotationen_negativ_final.xlsx"
-)
-negative_path = (
-    "/home/bruno/Desktop/Databases/Alle_bearbeiteten_Annotationen_negativ_final.xlsx"
-)
-relev_textsorten_dict = {
-    "Leserbriefe": ["Column4", "Column13"],
-    "Interviews": ["Column12", "Column5"],
-    "Gerichtsurteile": ["Column8", "Column10"],
-    "Kommentare": ["Column14", "Column11"],
-    "Plenarprotokolle": ["Column6", "Column7"],
-    "Sachbücher": ["Column3"]
-}
-
-
-def nonmoral_df(sheet_name, categories):
+def list_nonmoral(filepath, sheet_name, categories, rm_duplicates=True):
     """
-    Creates a dataframe which includes spans of the categories specified.
+    Creates a list which includes spans of the categories specified.
 
     Parameters:
         sheet_name: genre string, e.g. "Gerichtsurteile"
         categories: 0, 1, 2, 3 like in the sheets
     Returns:
-        Dataframe that has all the spans from the genre and category specified.
+        List that has all the spans from the genre and category specified.
     """
 
     # Load the Excel file into a pandas dataframe
-    df_neg = pd.read_excel(
-        negative_path,
-        sheet_name=sheet_name,
-        header=None)
-    df_pos = pd.read_excel(
-        positive_path,
+    source_df = pd.read_excel(
+        filepath,
         sheet_name=sheet_name,
         header=None)
 
-    dataframe_list = [df_neg, df_pos]
-
-    nonmoral_df = pd.DataFrame()
+    nonmoral_texts = []
 
     # Loop through the rows in the dataframe
-    for df in dataframe_list:
-        for index, row in df.iterrows():
-            # Check the value in the second column
-            if row[1] in categories and index % 2 == 1:
-                nonmoral_df = nonmoral_df.append(row)
+    for index, row in source_df.iterrows():
+        # Check the value in the second column
+        if row[1] in categories and index % 2 == 1:
+            nonmoral_texts.append(row[0])
 
-    return nonmoral_df
+    if rm_duplicates:
+        nonmoral_texts = list(set(nonmoral_texts))
+
+    return nonmoral_texts
 
 
-def moral_list(sheet_name):
+def list_moral_from_xlsx(filepath, sheet_name, rm_duplicates=True):
     """
     Reads an excel file which lists all spans annotated as 'moralization'.
     Returns the sentences annotated that way as a list of strings.
@@ -71,23 +48,104 @@ def moral_list(sheet_name):
         list of strings which were annotated as moralizations.
     """
 
-    excel_file = pd.ExcelFile(spans_path)
+    excel_file = pd.ExcelFile(filepath)
     df = excel_file.parse('spans_out')
 
+    textsorten_dict = {
+        "Leserbriefe": ["Column4", "Column13"],
+        "Interviews": ["Column12", "Column5"],
+        "Gerichtsurteile": ["Column8", "Column10"],
+        "Kommentare": ["Column14", "Column11"],
+        "Plenarprotokolle": ["Column6", "Column7"],
+        "Sachbücher": ["Column3"]
+    }
+
     # Read data
-    moralisierung_list = []
-    for column in relev_textsorten_dict[sheet_name]:
+    moral_texts = []
+    for column in textsorten_dict[sheet_name]:
         for row in range(2, 7):
             try:
                 data = df.at[row, column]
-                data_list = data.split(" ### ")
+                new_data_list = data.split(" ### ")
                 # Remove duplicates
-                moralisierung_list = moralisierung_list + list(
-                    set(data_list) - set(moralisierung_list))
+                moral_texts = moral_texts + new_data_list
             except AttributeError:
                 print("No spans at (Row" + str(row) + " / " + column + ").")
 
-    return moralisierung_list
+    if rm_duplicates:
+        moral_texts = list(set(moral_texts))    
+
+    return moral_texts
+
+
+def get_span(text, coordinates):
+    try:
+        span = text[coordinates[0]:(coordinates[1])]
+        return span
+    except TypeError:
+        print("Error getting span.")
+        return None
+
+
+def text_from_xmi(filepath):
+    """
+    Extracts from the xmi the corpus that the annotations are based on.
+    It is necessary to call this function if you want to output
+    annotated text at some point.
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        The corpus as a string
+    """
+
+    # Open the XMI file
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    text = root.find("{http:///uima/cas.ecore}Sofa").get('sofaString')
+
+    return text
+
+
+def list_moralizations_from_xmi(filepath, rm_duplicates):
+    """
+    Takes an xmi file and returns a list with 2-tuples.
+    The tuples mark the beginning and ending of spans that were
+    categorized as "moralizing speechacts".
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of 2-tuples.
+    """
+
+    # Open the XMI file
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    # Get all moralizing instances
+    moral_spans_list = []
+    for span in span_list:
+        test = span.get('KAT1MoralisierendesSegment')
+
+        if test:
+            if test != "Keine Moralisierung":
+                coordinates = (int(span.get("begin")), int(span.get("end")))
+                moral_spans_list.append(coordinates)
+
+    text = text_from_xmi(filepath)
+
+    moral_texts = []
+    for span in moral_spans_list:
+        moral_texts.append(get_span(text, span))
+
+    if rm_duplicates:
+        moral_texts = list(set(moral_texts))
+
+    return moral_texts
 
 
 def get_comparison_list(
@@ -169,12 +227,12 @@ def get_stats(
 def count_instances_lemma(
     moralization_list,
     thema_df,
-    lemmata_list
+    lemmata_list,
+    dictionary_mode=False,
 ):
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
+
+    comparison_dict = {k: [0, 0] for k in comparison_list}  # [moral, nonmoral]
+    comparison_dict["total_"] = [0, 0]  # [moral, nonmoral]
 
     tagger = ht.HanoverTagger('morphmodel_ger.pgz')
 
@@ -184,9 +242,9 @@ def count_instances_lemma(
             morali, language='german')
         tags = tagger.tag_sent(tokenized_sents)
         for tag in tags:
-            if tag[1] in comparison_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
+            comparison_dict["total_"][0] += 1
+            if tag[1] in comparison_dict.keys():
+                comparison_dict[tag[1]][0] += 1
 
     # Loop through the rows in the dataframe of non-moralizing segments
     for index, row in df_thema.iterrows():
@@ -194,22 +252,27 @@ def count_instances_lemma(
             row[0], language='german')
         tags = tagger.tag_sent(tokenized_sents)
         for tag in tags:
-            if tag[1] in lemmata_list:
-                counter_them_prot += 1
-            counter_them_ndds += 1
-    
+            comparison_dict["total_"][1] += 1
+            if tag[1] in comparison_dict.keys():
+                comparison_dict[tag[1]][1] += 1
+
+    if not dictionary_mode:
+        sum(1)
+        comparison_dict = {
+            "total_": comparison_dict[total],
+            "instances": []
+        }
+
     return (
-        counter_moral_prot,
-        counter_moral_n,
-        counter_them_prot,
-        counter_them_n,
+
     )
 
 
 def count_instances_pos(
     moralization_list,
     thema_df,
-    pos_list
+    pos_list,
+    dictionary_mode=False
 ):
     counter_moral_prot = 0
     counter_moral_n = 0
@@ -244,7 +307,6 @@ def count_instances_pos(
         counter_them_prot,
         counter_them_n,
     )  
-
 
 
 def compare_lemma_likelihood(
@@ -968,5 +1030,3 @@ def dictdict_to_xlsx(dictionary, filename):
 
     workbook.close()
 
-
-compare_pos_likelihood("Interviews", ["NN"])
