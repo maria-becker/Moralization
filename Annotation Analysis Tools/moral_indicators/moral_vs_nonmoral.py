@@ -214,6 +214,7 @@ def get_stats(
             "ratio": ratio,
             "diff_coeficient": diff_coeficient,
             "pvalue_fisher": res.pvalue,
+            "contingency_table": contingency_table
         }
 
         return statistics
@@ -287,6 +288,38 @@ def count_instances_pos(
     return comparison_dict
 
 
+def count_instances_token(
+    text_list,
+    token_list,
+    combined_mode,
+    language='german',
+):
+
+    comparison_dict = {token: 0 for token in token_list}
+    comparison_dict["_total_"] = 0
+
+    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+
+    # Loop through the rows in the dataframe of moralizing segments
+    for doc in text_list:
+        tokenized_sents = nltk.tokenize.word_tokenize(
+            doc, language=language)
+        lower_sents = [word.lower() for word in tokenized_sents]
+        for word in lower_sents:
+            comparison_dict["_total_"] += 1
+            if word in comparison_dict.keys():
+                comparison_dict[word] += 1
+
+    if combined_mode:
+        combined_dict = {
+            "_total_": comparison_dict.pop("_total_")
+        }
+        combined_dict[tuple(token_list)] = sum(comparison_dict.values())
+        return combined_dict
+
+    return comparison_dict
+
+
 def compare_lemma_likelihood(
     moral_list,
     nonmoral_list,
@@ -352,6 +385,43 @@ def compare_pos_likelihood(
         moral_counts[tuple(pos_list)],
         moral_counts["_total_"],
         nonmoral_counts[tuple(pos_list)],
+        nonmoral_counts["_total_"],
+    )
+
+    for stat, value in results.items():
+        print(stat, value)
+
+    return results
+
+
+def compare_token_likelihood(
+    moral_list,
+    nonmoral_list,
+    token_list,
+    language='german'
+):
+    """
+    This function compares moralizing and non-moralizing segments.
+    In particular, it calculates the frequency of 'protagonist' terms
+    """
+
+    moral_counts = count_instances_token(
+        moral_list,
+        token_list,
+        combined_mode=True,
+        language=language,
+    )
+    nonmoral_counts = count_instances_token(
+        nonmoral_list,
+        token_list,
+        combined_mode=True,
+        language=language
+    )
+
+    results = get_stats(
+        moral_counts[tuple(token_list)],
+        moral_counts["_total_"],
+        nonmoral_counts[tuple(token_list)],
         nonmoral_counts["_total_"],
     )
 
@@ -433,558 +503,43 @@ def compare_pos_likelihood_dict(
     return results_dict
 
 
-
-def compare_lemma_likelihood_fulltexts(
-    comparison_list,
-    ignore_sheet=[],
-    categories=[0],
+def compare_token_likelihood_dict(
+    moral_list,
+    nonmoral_list,
+    token_list,
+    language='german'
 ):
     """
     This function compares moralizing and non-moralizing segments.
     In particular, it calculates the frequency of 'protagonist' terms
     """
 
-    sheet_list = ["Gerichtsurteile", "Interviews", "Kommentare", "Leserbriefe"]
-    sheet_list = [sheet for sheet in sheet_list if sheet not in ignore_sheet]
-
-    df_thema = pd.DataFrame()
-    moralisierung_list = []
-
-    for sheet in sheet_list:
-        # Load the Excel file into a pandas dataframe
-        df_neg = pd.read_excel(
-            negative_path,
-            sheet_name=sheet,
-            header=None)
-        df_pos = pd.read_excel(
-            positive_path,
-            sheet_name=sheet,
-            header=None)
-
-        dataframe_list = [df_neg, df_pos]
-
-        # Loop through the rows in the dataframe
-        for df in dataframe_list:
-            for index, row in df.iterrows():
-                # Check the value in the second column
-                if row[1] in categories:
-                    # Add the row to the second dataframe
-                    if index % 2 == 1:
-                        df_thema = df_thema.append(row)
-
-        # Open the Excel file
-        excel_file = pd.ExcelFile(spans_path)
-
-        # Get the sheet you want to read
-        df = excel_file.parse('spans_out')
-
-        # Read data
-        for column in relev_textsorten_dict[sheet]:
-            for row in range(2, 7):
-                try:
-                    data = df.at[row, column]
-                    data_list = data.split(" ### ")
-
-                    # Zuerst Duplikate entfernen
-                    moralisierung_list = moralisierung_list + list(
-                        set(data_list) - set(moralisierung_list))
-                except AttributeError:
-                    print("No values @ (Row" + str(row) + " / " + column + ")")
-
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_list:
-                counter_them_prot += 1
-            counter_them_n += 1
-
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    likelihood_moral = counter_moral_prot / counter_moral_n
-    likelihood_them = counter_them_prot / counter_them_n
-
-    contingency_table = [
-        [counter_moral_prot, counter_moral_n - counter_moral_prot],
-        [counter_them_prot, counter_them_n - counter_them_prot]
-    ]
-    print(contingency_table)
-
-    res = stats.fisher_exact(contingency_table)
-
-    print("\nLIKELIHOOD MORAL (Prozent): ", str(likelihood_moral * 100))
-    print("LIKELIHOOD THEM  (Prozent): ", str(likelihood_them * 100))
-
-    ratio = (
-        likelihood_moral
-        / likelihood_them
+    moral_counts = count_instances_token(
+        moral_list,
+        token_list,
+        combined_mode=False,
+        language=language,
     )
-    diff_coeficient = (
-        (likelihood_moral - likelihood_them)
-        / (likelihood_moral + likelihood_them)
+    nonmoral_counts = count_instances_token(
+        nonmoral_list,
+        token_list,
+        combined_mode=False,
+        language=language
     )
 
-    try:
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF OLD: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-
-    return 0
-
-
-def compare_lemma_likelihood_fulltext_dict(
-    comparison_list=0,
-    ignore_genre=[],
-    categories=[0],
-):
-    """
-    This function compares moralizing and non-moralizing segments.
-    In particular, it calculates the frequency of 'protagonist' terms
-    """
-
-    sheet_list = ["Gerichtsurteile", "Interviews", "Kommentare", "Leserbriefe"]
-    sheet_list = [sheet for sheet in sheet_list if sheet not in ignore_genre]
-
-    df_thema = pd.DataFrame()
-    moralisierung_list = []
-
-    # Load the Excel file into a pandas dataframe
-    for sheet in sheet_list:
-        df_neg = pd.read_excel(
-            negative_path,
-            sheet_name=sheet,
-            header=None)
-        df_pos = pd.read_excel(
-            positive_path,
-            sheet_name=sheet,
-            header=None)
-
-        dataframe_list = [df_neg, df_pos]
-
-        # Loop through the rows in the dataframe
-        for df in dataframe_list:
-            for index, row in df.iterrows():
-                # Check the value in the second column
-                if row[1] in categories:
-                    # Add the row to the second dataframe
-                    if index % 2 == 1:
-                        df_thema = df_thema.append(row)
-
-        print(df_thema)
-
-        # Open the Excel file
-        excel_file = pd.ExcelFile(spans_path)
-        # Get the sheet you want to read
-        df = excel_file.parse('spans_out')
-
-        # Read data
-        for column in relev_textsorten_dict[sheet]:
-            for row in range(2, 7):
-                try:
-                    data = df.at[row, column]
-                    data_list = data.split(" ### ")
-
-                    # Zuerst Duplikate entfernen
-                    moralisierung_list = moralisierung_list + list(
-                        set(data_list) - set(moralisierung_list))
-                except AttributeError:
-                    print(
-                        "No values at (Row" + str(row) + " / " + column + ")."
-                    )
-
-    comparison_dict = {k: None for k in comparison_list}
-    for key in comparison_dict:
-        comparison_dict[key] = [0, 0]  # [counter_moral, counter_them]
-
-    counter_moral_n = 0
-    counter_them_n = 0
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][0] += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]][1] += 1
-            counter_them_n += 1
-
-    results_dict = {k: None for k in comparison_dict.keys()}
-    for lemma in results_dict:
-        counter_moral_prot = comparison_dict[lemma][0]
-        counter_them_prot = comparison_dict[lemma][1]
-        likelihood_moral = counter_moral_prot / counter_moral_n
-        likelihood_them = counter_them_prot / counter_them_n
-
-        contingency_table = [
-            [counter_moral_prot, counter_moral_n - counter_moral_prot],
-            [counter_them_prot, counter_them_n - counter_them_prot]
-        ]
-
-        res = stats.fisher_exact(contingency_table)
-
-        ratio = None
-
-        try:
-            # Compare the likelihoods
-            ratio = likelihood_moral / likelihood_them
-            diff_coeficient = (
-                (likelihood_moral - likelihood_them)
-                / (likelihood_moral + likelihood_them)
-            )
-        except ZeroDivisionError:
-            ratio = False
-
-        results_dict[lemma] = {
-            "ratio": ratio,
-            "diff_co": diff_coeficient,
-            "pvalue": res.pvalue
-        }
+    results_dict = {}
+    for token in token_list:
+        results_dict[token] = get_stats(
+            moral_counts[token],
+            moral_counts["_total_"],
+            nonmoral_counts[token],
+            nonmoral_counts["_total_"]
+        )
 
     return results_dict
 
 
-def compare_pos_likelihood_fulltexts(
-    pos_list,
-    categories=[0],
-    ignore_sheet=[]
-):
-    """
-    This function compares moralizing and non-moralizing segments.
-    In particular, it calculates the frequency of 'protagonist' terms
-    """
-
-    print("POS LIST: ", str(pos_list))
-
-    # Load the Excel file into a pandas dataframe
-    sheet_list = ["Gerichtsurteile", "Interviews", "Kommentare", "Leserbriefe"]
-    sheet_list = [sheet for sheet in sheet_list if sheet not in ignore_sheet]
-
-    df_thema = pd.DataFrame()
-    moralisierung_list = []
-
-    for sheet in sheet_list:
-        # Load the Excel file into a pandas dataframe
-        df_neg = pd.read_excel(
-            negative_path,
-            sheet_name=sheet,
-            header=None)
-        df_pos = pd.read_excel(
-            positive_path,
-            sheet_name=sheet,
-            header=None)
-
-        dataframe_list = [df_neg, df_pos]
-
-        # Loop through the rows in the dataframe
-        for df in dataframe_list:
-            for index, row in df.iterrows():
-                # Check the value in the second column
-                if row[1] in categories:
-                    # Add the row to the second dataframe
-                    if index % 2 == 1:
-                        df_thema = df_thema.append(row)
-
-        # Open the Excel file
-        excel_file = pd.ExcelFile(spans_path)
-
-        # Get the sheet you want to read
-        df = excel_file.parse('spans_out')
-
-        # Read data
-        for column in relev_textsorten_dict[sheet]:
-            for row in range(2, 7):
-                try:
-                    data = df.at[row, column]
-                    data_list = data.split(" ### ")
-
-                    # Zuerst Duplikate entfernen
-                    moralisierung_list = moralisierung_list + list(
-                        set(data_list) - set(moralisierung_list))
-                except AttributeError:
-                    print("No values @ (Row" + str(row) + " / " + column + ")")
-
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[2] in pos_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            if tag[2] in pos_list:
-                counter_them_prot += 1
-            counter_them_n += 1
-
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    likelihood_moral = counter_moral_prot / counter_moral_n
-    likelihood_them = counter_them_prot / counter_them_n
-
-    contingency_table = [
-        [counter_moral_prot, counter_moral_n - counter_moral_prot],
-        [counter_them_prot, counter_them_n - counter_them_prot]
-    ]
-
-    res = stats.fisher_exact(contingency_table)
-
-    print("\nLIKELIHOOD MORAL (Prozent): ", str(likelihood_moral * 100))
-    print("LIKELIHOOD THEM  (Prozent): ", str(likelihood_them * 100))
-
-    ratio = likelihood_moral / likelihood_them
-    diff_coeficient = (
-        (likelihood_moral - likelihood_them)
-        / (likelihood_moral + likelihood_them)
-    )
-
-    try:
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-
-    return 0
-
-
-def compare_token_likelihood(
-    sheet_name,
-    comparison_list,
-    categories=[0],
-):
-    """
-    This function compares moralizing and non-moralizing segments.
-    In particular, it calculates the frequency of 'protagonist' terms
-    """
-
-    # Get nonmoral spans from excel sheets
-    df_thema = nonmoral_df(sheet_name, categories)
-    # Get moralizing spans SSC excel sheets
-    moralisierung_list = moral_list(sheet_name)
-
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tokenized_sents = [x.lower() for x in tokenized_sents]
-        for token in tokenized_sents:
-            if token in comparison_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tokenized_sents = [x.lower() for x in tokenized_sents]
-        for token in tokenized_sents:
-            if token in comparison_list:
-                counter_them_prot += 1
-            counter_them_n += 1
-
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    likelihood_moral = counter_moral_prot / counter_moral_n
-    likelihood_them = counter_them_prot / counter_them_n
-
-    contingency_table = [
-        [counter_moral_prot, counter_moral_n - counter_moral_prot],
-        [counter_them_prot, counter_them_n - counter_them_prot]
-    ]
-
-    res = stats.fisher_exact(contingency_table)
-
-    print("\nLIKELIHOOD MORAL (Prozent): ", str(likelihood_moral * 100))
-    print("LIKELIHOOD THEM  (Prozent): ", str(likelihood_them * 100))
-
-    ratio = likelihood_moral / likelihood_them
-    diff_coeficient = (
-        (likelihood_moral - likelihood_them)
-        / (likelihood_moral + likelihood_them)
-    )
-
-    try:
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF OLD: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-
-    return 0
-
-
-def compare_token_likelihood_fulltexts(
-    comparison_list,
-    ignore_sheet=[],
-    categories=[0],
-):
-    """
-    This function compares moralizing and non-moralizing segments.
-    In particular, it calculates the frequency of 'protagonist' terms
-    """
-
-    sheet_list = ["Gerichtsurteile", "Interviews", "Kommentare", "Leserbriefe"]
-    sheet_list = [sheet for sheet in sheet_list if sheet not in ignore_sheet]
-
-    df_thema = pd.DataFrame()
-    moralisierung_list = []
-
-    for sheet in sheet_list:
-        # Load the Excel file into a pandas dataframe
-        df_neg = pd.read_excel(
-            negative_path,
-            sheet_name=sheet,
-            header=None)
-        df_pos = pd.read_excel(
-            positive_path,
-            sheet_name=sheet,
-            header=None)
-
-        dataframe_list = [df_neg, df_pos]
-
-        # Loop through the rows in the dataframe
-        for df in dataframe_list:
-            for index, row in df.iterrows():
-                # Check the value in the second column
-                if row[1] in categories:
-                    # Add the row to the second dataframe
-                    if index % 2 == 1:
-                        df_thema = df_thema.append(row)
-
-        # Open the Excel file
-        excel_file = pd.ExcelFile(spans_path)
-
-        # Get the sheet you want to read
-        df = excel_file.parse('spans_out')
-
-        # Read data
-        for column in relev_textsorten_dict[sheet]:
-            for row in range(2, 7):
-                try:
-                    data = df.at[row, column]
-                    data_list = data.split(" ### ")
-
-                    # Zuerst Duplikate entfernen
-                    moralisierung_list = moralisierung_list + list(
-                        set(data_list) - set(moralisierung_list))
-                except AttributeError:
-                    print("No values @ (Row" + str(row) + " / " + column + ")")
-
-    counter_moral_prot = 0
-    counter_moral_n = 0
-    counter_them_prot = 0
-    counter_them_n = 0
-
-    # Loop through the rows in the dataframe of moralizing segments
-    for morali in moralisierung_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            morali, language='german')
-        tokenized_sents = [x.lower() for x in tokenized_sents]
-        for token in tokenized_sents:
-            if token in comparison_list:
-                counter_moral_prot += 1
-            counter_moral_n += 1
-
-    # Loop through the rows in the dataframe of non-moralizing segments
-    for index, row in df_thema.iterrows():
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            row[0], language='german')
-        tokenized_sents = [x.lower() for x in tokenized_sents]
-        for token in tokenized_sents:
-            if token in comparison_list:
-                counter_them_prot += 1
-            counter_them_n += 1
-
-    # Calculate the likelihood that a token in a given text type
-    # (moralizing vs non-moralizing) is on the list of protagonists
-    likelihood_moral = counter_moral_prot / counter_moral_n
-    likelihood_them = counter_them_prot / counter_them_n
-
-    contingency_table = [
-        [counter_moral_prot, counter_moral_n - counter_moral_prot],
-        [counter_them_prot, counter_them_n - counter_them_prot]
-    ]
-    print(contingency_table)
-
-    res = stats.fisher_exact(contingency_table)
-
-    print("\nLIKELIHOOD MORAL (Prozent): ", str(likelihood_moral * 100))
-    print("LIKELIHOOD THEM  (Prozent): ", str(likelihood_them * 100))
-
-    ratio = likelihood_moral / likelihood_them
-    diff_coeficient = (
-        (likelihood_moral - likelihood_them)
-        / (likelihood_moral + likelihood_them)
-    )
-
-    try:
-        # Compare the likelihoods
-        print("\nRATIO: ", str(ratio))
-        print("DIFF COEFF OLD: ", str(diff_coeficient))
-        print("PROBABILITY FISHER: ", str(res.pvalue))
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
-
-    return 0
-
-
-def dictdict_to_xlsx(dictionary, filename):
+def dict_to_xlsx(dictionary, filename):
 
     if filename[-5:] != ".xlsx":
         print("Filename is not an excel file!")
@@ -994,16 +549,25 @@ def dictdict_to_xlsx(dictionary, filename):
     workbook = xlsxwriter.Workbook(filename)
     worksheet = workbook.add_worksheet()
 
-    # Start from the first cell. Rows and columns are zero indexed.
+    # Write header row
+    bold = workbook.add_format({'bold': True})
     row = 0
+    col = 1
+    for key in next(iter(dictionary.values())):
+        worksheet.write(row, col, key, bold)
+        col += 1
 
     # Iterate over the data and write it out row by row.
-    for key in dictionary:
+    row = 1
+    for key, statistics in dictionary.items():
         col = 0
         worksheet.write(row, col, key)
-        for inner_key in dictionary[key]:
+        for stat, value in statistics.items():
             col += 1
-            worksheet.write(row, col, dictionary[key][inner_key])
+            try:
+                worksheet.write(row, col, value)
+            except TypeError:
+                worksheet.write(row, col, str(value))
         row += 1
 
     workbook.close()
