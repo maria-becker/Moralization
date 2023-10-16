@@ -1,181 +1,7 @@
-import pandas as pd
 from HanTa import HanoverTagger as ht
 import nltk
 import scipy.stats as stats
 import xlsxwriter
-import xml.etree.ElementTree as ET
-
-
-def list_nonmoral(filepath, sheet_name, categories, rm_duplicates=True):
-    """
-    Creates a list which includes spans of the categories specified.
-
-    Parameters:
-        sheet_name: genre string, e.g. "Gerichtsurteile"
-        categories: 0, 1, 2, 3 like in the sheets
-    Returns:
-        List that has all the spans from the genre and category specified.
-    """
-
-    # Load the Excel file into a pandas dataframe
-    source_df = pd.read_excel(
-        filepath,
-        sheet_name=sheet_name,
-        header=None)
-
-    nonmoral_texts = []
-
-    # Loop through the rows in the dataframe
-    for index, row in source_df.iterrows():
-        # Check the value in the second column
-        if row[1] in categories and index % 2 == 1:
-            nonmoral_texts.append(row[0])
-
-    if rm_duplicates:
-        nonmoral_texts = list(set(nonmoral_texts))
-
-    return nonmoral_texts
-
-
-def list_moral_from_xlsx(filepath, sheet_name, rm_duplicates=True):
-    """
-    Reads an excel file which lists all spans annotated as 'moralization'.
-    Returns the sentences annotated that way as a list of strings.
-
-    Parameters:
-        sheet_name: genre string, e.g. "Gerichtsurteile"
-    Returns:
-        list of strings which were annotated as moralizations.
-    """
-
-    excel_file = pd.ExcelFile(filepath)
-    df = excel_file.parse('spans_out')
-
-    textsorten_dict = {
-        "Leserbriefe": ["Column4", "Column13"],
-        "Interviews": ["Column12", "Column5"],
-        "Gerichtsurteile": ["Column8", "Column10"],
-        "Kommentare": ["Column14", "Column11"],
-        "Plenarprotokolle": ["Column6", "Column7"],
-        "Sachbücher": ["Column3"]
-    }
-
-    # Read data
-    moral_texts = []
-    for column in textsorten_dict[sheet_name]:
-        for row in range(2, 7):
-            try:
-                data = df.at[row, column]
-                new_data_list = data.split(" ### ")
-                # Remove duplicates
-                moral_texts = moral_texts + new_data_list
-            except AttributeError:
-                print("No spans at (Row" + str(row) + " / " + column + ").")
-
-    if rm_duplicates:
-        moral_texts = list(set(moral_texts))    
-
-    return moral_texts
-
-
-def get_span(text, coordinates):
-    try:
-        span = text[coordinates[0]:(coordinates[1])]
-        return span
-    except TypeError:
-        print("Error getting span.")
-        return None
-
-
-def text_from_xmi(filepath):
-    """
-    Extracts from the xmi the corpus that the annotations are based on.
-    It is necessary to call this function if you want to output
-    annotated text at some point.
-
-    Parameters:
-        filepath: The xmi file you want to open.
-    Returns:
-        The corpus as a string
-    """
-
-    # Open the XMI file
-    tree = ET.parse(filepath)
-    root = tree.getroot()
-
-    text = root.find("{http:///uima/cas.ecore}Sofa").get('sofaString')
-
-    return text
-
-
-def list_moralizations_from_xmi(filepath, rm_duplicates):
-    """
-    Takes an xmi file and returns a list with 2-tuples.
-    The tuples mark the beginning and ending of spans that were
-    categorized as "moralizing speechacts".
-
-    Parameters:
-        filepath: The xmi file you want to open.
-    Returns:
-        List of 2-tuples.
-    """
-
-    # Open the XMI file
-    tree = ET.parse(filepath)
-    root = tree.getroot()
-
-    span_list = root.findall("{http:///custom.ecore}Span")
-
-    # Get all moralizing instances
-    moral_spans_list = []
-    for span in span_list:
-        test = span.get('KAT1MoralisierendesSegment')
-
-        if test:
-            if test != "Keine Moralisierung":
-                coordinates = (int(span.get("begin")), int(span.get("end")))
-                moral_spans_list.append(coordinates)
-
-    text = text_from_xmi(filepath)
-
-    moral_texts = []
-    for span in moral_spans_list:
-        moral_texts.append(get_span(text, span))
-
-    if rm_duplicates:
-        moral_texts = list(set(moral_texts))
-
-    return moral_texts
-
-
-def get_comparison_list(
-    filename,
-    header,
-    comparison_sheet,
-    dont_count_list=[],
-    top_hits=0
-):
-
-    comparison_list = []
-    df_protag = pd.read_excel(
-        filename, sheet_name=comparison_sheet, header=header)
-
-    # Use all entries in the list if no maximum was set
-    if top_hits == 0:
-        top_hits = len(df_protag)
-
-    # Add all relevant Lemmas to the list that will get compared
-    for index, row in df_protag.iterrows():
-        if index < top_hits:
-            if not row[1] == -1:
-                comparison_list.append(row[0])
-
-    # Remove unwanted entries from list
-    for entry in dont_count_list:
-        if entry in comparison_list:
-            comparison_list.remove(entry)
-
-    return comparison_list
 
 
 def get_stats(
@@ -297,8 +123,6 @@ def count_instances_token(
 
     comparison_dict = {token: 0 for token in token_list}
     comparison_dict["_total_"] = 0
-
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
 
     # Loop through the rows in the dataframe of moralizing segments
     for doc in text_list:
@@ -562,7 +386,7 @@ def dict_to_xlsx(dictionary, filename):
     for key, statistics in dictionary.items():
         col = 0
         worksheet.write(row, col, key)
-        for stat, value in statistics.items():
+        for value in statistics.values():
             col += 1
             try:
                 worksheet.write(row, col, value)
@@ -571,4 +395,3 @@ def dict_to_xlsx(dictionary, filename):
         row += 1
 
     workbook.close()
-
