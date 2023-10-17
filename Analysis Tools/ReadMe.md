@@ -1,24 +1,30 @@
 # Annotation Analysis Tools
-Get examples of specific phenomena or perform statistical analysis on the dataset.
+Get examples of specific phenomena or perform statistical and linguistic analyses on the dataset.
 
 ## Contents
-1. **Stats_and_Search**: Code for example retrieval and statistics about the annotations. Includes simple-to-use jupyter notebooks for retrieving examples and calculating statistics, both for single corpus files and a collection of corpus files, respectively.
+1. **annotation_statistics**: Code for generating statistics about the annotations. Includes simple-to-use jupyter notebooks for showcasing.
    + Uses XMI-Files as input.
-   + Only German and English are currently fully supported; some search functions don't work with other languages and are work in progress.
-   + Documentation is getting updated.
-2. **moral_indicators**: Perfom analyses on the linguistic surface. Find which words/POS are common for different annotation categories, and which are typical of moralizing speech.
-   + Work in progress!
-   + Currently uses XMI files and Excel files with specific formats as input.
-   + Currently does not include user-friendly notebooks, nor is the documentation updated.
-3. **protagonist_analysis_GER**: Perform analyses on protagonists in the German dataset. Almost all tasks can also be achieved via Stats_and_Search, better use those modules.
-   + Depricated, in the process of being integrated into Stats_and_Search.
-   + Will be deleted at a later date.
+   + Language-independend.
+   + Documentation not fully finshed; in the process of updating.
+2. **moral_indicators**: Perfom analyses on the linguistic surface. Find which words/POS are common for different annotation categories, and which are typical of moralizing speech. Includes a jupyter notebook for showcasing.
+   + Uses XMI files and Excel files with specific formats as input.
+   + Only German Hanta-tagging is supported. WIP!
+   + Documentation not fully finshed; in the process of updating.
+3. **search_moralizations**: Search for all moralizations that include a certain phenomenon, such as a certain lexeme. Useful for generating examples. Includes simple-to-use jupyter notebooks for showcasing.
+   + Uses XMI-Files as input.
+   + All four languages of the project (German, English, Italian, French) supported.
+   + Documentation not fully finshed; in the process of updating.
+4. **\_utils\_**
+   + Used by other modules and toolsets. Not very useful by itself.
+
 
 ## Dependencies
-Before running this code, make sure you have the following dependencies installed:
+The code was tested on Python3.12, though it might work with Python versions 3.7 and up.
 
+Before running this code, make sure you have the following dependencies installed:
 + NLTK
 + HanTa
++ Spacy
 + xlsxwriter
 + pandas
 + matplotlib
