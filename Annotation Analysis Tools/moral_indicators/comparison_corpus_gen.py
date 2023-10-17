@@ -72,7 +72,7 @@ def list_moralization_strings_from_xmi(filepath, rm_duplicates=True):
 
     corpus_list = []
     for span in moral_spans_list:
-        corpus_list.append(ce.get_span(text, span))
+        corpus_list.append(xau.get_span(text, span))
 
     if rm_duplicates:
         corpus_list = list(set(corpus_list))
@@ -100,7 +100,8 @@ def list_nonmoral_strings_from_xlsx(
     source_df = pd.read_excel(
         filepath,
         sheet_name=sheet_name,
-        header=None)
+        header=None
+    )
 
     nonmoral_texts = []
 
