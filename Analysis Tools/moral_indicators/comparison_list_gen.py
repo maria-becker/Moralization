@@ -37,13 +37,23 @@ def tokens_in_annotations(
     return token_dict
 
 
-def find_phrase_position(sentence, phrase):
+def find_phrase_position_hanta(sentence, phrase):
     for i in range(len(sentence)):
         if sentence[i:i + len(phrase)] == phrase:
             return i
 
-    # Return -1 if the phrase is not found in the sentence
     return -1
+
+
+def find_phrase_position_spacy(sentence, phrase):
+    phrase_tokens = [token.text for token in phrase]
+
+    for i in range(len(sentence) - len(phrase_tokens) + 1):
+        if [token.text for token in sentence[i:i + len(phrase_tokens)]] == phrase_tokens:
+            return i
+
+    return -1
+
 
 
 def lemmata_in_annotations(
@@ -78,7 +88,7 @@ def lemmata_in_annotations(
                     xau.get_span(corpus.text, moralization), language=language)
                 tokenized_instance = nltk.tokenize.word_tokenize(
                     xau.get_span(corpus.text, instance['Coordinates']), language=language)
-                instance_position = find_phrase_position(tokenized_sent, tokenized_instance)
+                instance_position = find_phrase_position_hanta(tokenized_sent, tokenized_instance)
 
                 tags = tagger.tag_sent(tokenized_sent)
 
@@ -87,6 +97,28 @@ def lemmata_in_annotations(
                         lemma_dict[tag[1]] = 1
                     else:
                         lemma_dict[tag[1]] += 1
+
+    else:
+
+        model = spacy.load(f'{language}_core_news_md')
+
+        for moralization, instances in association.items():
+            for instance in instances:
+                tokenized_sent = model(
+                    xau.get_span(corpus.text, moralization)
+                )
+                tokenized_instance = model(
+                    xau.get_span(corpus.text, instance['Coordinates'])
+                )
+
+                instance_position = find_phrase_position_spacy(tokenized_sent,
+                                                         tokenized_instance)
+
+                for tag in tokenized_instance[instance_position:len(tokenized_instance)+instance_position]:
+                    if tag.lemma_ not in lemma_dict:
+                        lemma_dict[tag.lemma_] = 1
+                    else:
+                        lemma_dict[tag.lemma_] += 1
 
     # Sort dictionary by values
     lemma_dict = {k: v for k, v in sorted(lemma_dict.items(), key=lambda item: item[1])}
@@ -127,7 +159,7 @@ def pos_lemmata_in_annotations(
                     xau.get_span(corpus.text, moralization), language=language)
                 tokenized_instance = nltk.tokenize.word_tokenize(
                     xau.get_span(corpus.text, instance['Coordinates']), language=language)
-                instance_position = find_phrase_position(tokenized_sent, tokenized_instance)
+                instance_position = find_phrase_position_hanta(tokenized_sent, tokenized_instance)
 
                 tags = tagger.tag_sent(tokenized_sent)
 
@@ -137,6 +169,28 @@ def pos_lemmata_in_annotations(
                             lemma_dict[tag[1]] = 1
                         else:
                             lemma_dict[tag[1]] += 1
+
+    else:
+
+        model = spacy.load(f'{language}_core_news_md')
+
+        for moralization, instances in association.items():
+            for instance in instances:
+                tokenized_sent = model(
+                    xau.get_span(corpus.text, moralization)
+                )
+                tokenized_instance = model(
+                    xau.get_span(corpus.text, instance['Coordinates'])
+                )
+                instance_position = find_phrase_position_spacy(tokenized_sent,
+                                                         tokenized_instance)
+
+                for tag in tokenized_instance[instance_position:len(tokenized_instance)+instance_position]:
+                    if tag.pos_ in pos_list:
+                        if tag.lemma_ not in lemma_dict:
+                            lemma_dict[tag.lemma_] = 1
+                        else:
+                            lemma_dict[tag.lemma_] += 1
 
     # Sort dictionary by values
     lemma_dict = {k: v for k, v in sorted(lemma_dict.items(), key=lambda item: item[1])}
@@ -177,4 +231,3 @@ def get_comparison_list(
                 comparison_list.remove(entry)
 
     return comparison_list
-

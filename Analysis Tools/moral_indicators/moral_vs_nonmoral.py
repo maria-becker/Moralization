@@ -2,6 +2,7 @@ from HanTa import HanoverTagger as ht
 import nltk
 import scipy.stats as stats
 import xlsxwriter
+import spacy
 
 
 def get_stats(
@@ -54,23 +55,42 @@ def count_instances_lemma(
     text_list,
     lemmata_list,
     combined_mode,
-    language='german',
+    language='de',
+    hanta=False
 ):
 
     comparison_dict = {lemma: 0 for lemma in lemmata_list}
     comparison_dict["_total_"] = 0
 
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+    if (language == "de" or language == "en") and hanta:
 
-    # Loop through the rows in the dataframe of moralizing segments
-    for doc in text_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            doc, language=language)
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            comparison_dict["_total_"] += 1
-            if tag[1] in comparison_dict.keys():
-                comparison_dict[tag[1]] += 1
+        if language == "de":
+            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+            language = 'german'
+        elif language == "en":
+            tagger = ht.HanoverTagger('morphmodel_en.pgz')
+            language = 'english'
+
+        # Loop through the rows in the dataframe of moralizing segments
+        for doc in text_list:
+            tokenized_sents = nltk.tokenize.word_tokenize(
+                doc, language=language)
+            tags = tagger.tag_sent(tokenized_sents)
+            for tag in tags:
+                comparison_dict["_total_"] += 1
+                if tag[1] in comparison_dict.keys():
+                    comparison_dict[tag[1]] += 1
+
+    else:
+
+        model = spacy.load(f'{language}_core_news_md')
+
+        for doc in text_list:
+            tagged = model(doc)
+            for tag in tagged:
+                comparison_dict["_total_"] += 1
+                if tag.lemma_ in comparison_dict.keys():
+                    comparison_dict[tag.lemma_] += 1
 
     if combined_mode:
         combined_dict = {
@@ -86,23 +106,42 @@ def count_instances_pos(
     text_list,
     pos_list,
     combined_mode,
-    language='german',
+    language='de',
+    hanta=False
 ):
 
     comparison_dict = {pos: 0 for pos in pos_list}
     comparison_dict["_total_"] = 0
 
-    tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+    if (language == "de" or language == "en") and hanta:
 
-    # Loop through the rows in the dataframe of moralizing segments
-    for doc in text_list:
-        tokenized_sents = nltk.tokenize.word_tokenize(
-            doc, language=language)
-        tags = tagger.tag_sent(tokenized_sents)
-        for tag in tags:
-            comparison_dict["_total_"] += 1
-            if tag[2] in comparison_dict.keys():
-                comparison_dict[tag[2]] += 1
+        if language == "de":
+            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+            language = 'german'
+        elif language == "en":
+            tagger = ht.HanoverTagger('morphmodel_en.pgz')
+            language = 'english'
+
+        # Loop through the rows in the dataframe of moralizing segments
+        for doc in text_list:
+            tokenized_sents = nltk.tokenize.word_tokenize(
+                doc, language=language)
+            tags = tagger.tag_sent(tokenized_sents)
+            for tag in tags:
+                comparison_dict["_total_"] += 1
+                if tag[2] in comparison_dict.keys():
+                    comparison_dict[tag[2]] += 1
+
+    else:
+
+        model = spacy.load(f'{language}_core_news_md')
+
+        for doc in text_list:
+            tagged = model(doc)
+            for tag in tagged:
+                comparison_dict["_total_"] += 1
+                if tag.pos_ in comparison_dict.keys():
+                    comparison_dict[tag.pos_] += 1
 
     if combined_mode:
         combined_dict = {
