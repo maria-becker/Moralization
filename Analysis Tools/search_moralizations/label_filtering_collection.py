@@ -25,7 +25,7 @@ def lemma_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.word_label_instances(
+        output_dict[corpus] = lfs.lemma_label_instances(
             corpus_collection.collection[corpus],
             lemma,
             label_type,
