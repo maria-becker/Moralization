@@ -269,3 +269,90 @@ def get_comparison_list(
                 comparison_list.remove(entry)
 
     return comparison_list
+
+
+def lemmata_with_annotations(
+        label_type,
+        language,
+        corpus,
+        hanta=False
+):
+    if not xau.valid_category(label_type):
+        return
+
+    label = getattr(corpus, label_type)
+    association = xau.label_associations_category(
+        corpus.moralizations,
+        label
+    )
+
+    lemma_dict = {}
+
+    if (language == "de" or language == "en") and hanta:
+
+        if language == "de":
+            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
+            language = 'german'
+        elif language == "en":
+            tagger = ht.HanoverTagger('morphmodel_en.pgz')
+            language = 'english'
+
+        for moralization, instances in association.items():
+            for instance in instances:
+                tokenized_sent = nltk.tokenize.word_tokenize(
+                    xau.get_span(corpus.text, moralization),
+                    language=language
+                )
+                tokenized_instance = nltk.tokenize.word_tokenize(
+                    xau.get_span(corpus.text, instance['Coordinates']),
+                    language=language
+                )
+
+                instance_position = find_phrase_position_hanta(
+                    tokenized_sent,
+                    tokenized_instance)
+
+                tags = tagger.tag_sent(tokenized_sent)
+
+                relevant_tokens = tags[
+                    instance_position:
+                    len(tokenized_instance)+instance_position
+                ]
+
+                for tag in relevant_tokens:
+                    if tag[1] not in lemma_dict:
+                        lemma_dict[tag[1]] = [1, [instance]]
+                    else:
+                        lemma_dict[tag[1]][0] += 1
+                        lemma_dict[tag[1]][1].append(instance)
+
+    else:
+
+        model = spacy.load(f'{language}_core_news_md')
+
+        for moralization, instances in association.items():
+            for instance in instances:
+                tokenized_sent = model(
+                    xau.get_span(corpus.text, moralization)
+                )
+                tokenized_instance = model(
+                    xau.get_span(corpus.text, instance['Coordinates'])
+                )
+
+                instance_position = find_phrase_position_spacy(
+                    tokenized_sent,
+                    tokenized_instance)
+
+                relevant_tokens = tokenized_instance[
+                    instance_position:
+                    len(tokenized_instance)+instance_position
+                ]
+
+                for tag in relevant_tokens:
+                    if tag.lemma_ not in lemma_dict:
+                        lemma_dict[tag.lemma_] = [1, [instance]]
+                    else:
+                        lemma_dict[tag.lemma_][0] += 1
+                        lemma_dict[tag.lemma_][1].append(instance)
+
+    return lemma_dict
