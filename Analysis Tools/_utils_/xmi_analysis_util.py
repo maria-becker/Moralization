@@ -208,7 +208,19 @@ def calculate_normalized_pmi(contingency_table):
 
 def freq_table(corpus, associations1, associations2, label1, label2):
     """
-    ...
+    Creates a contigency table for two annotation labels. Looks whether
+    the one, both or none of the lables are present at least once 
+    for each moralizing segment in the corpus.
+
+    Parameters:
+        - corpus: CorpusData object
+        - associations1: dict as created by label_associatins_category()
+        - associations2: dict as created by label_associatins_category()
+        - label1: str of a label (such as 'Care', 'Harm')
+        - label2: str of a label (such as 'Care', 'Harm')
+
+    Returns:
+        - two-dimensional array (the contigency table as described above).
     """
     counter_1 = 0
     counter_2 = 0
@@ -226,13 +238,10 @@ def freq_table(corpus, associations1, associations2, label1, label2):
         else:
             counter_none += 1
 
-    try:
-        contingency_table = [
-            [counter_12, counter_1],
-            [counter_2, counter_none]
-        ]
-    except ZeroDivisionError:
-        print("Error: Division by zero.")
+    contingency_table = [
+        [counter_12, counter_1],
+        [counter_2, counter_none]
+    ]
 
     return contingency_table
 
