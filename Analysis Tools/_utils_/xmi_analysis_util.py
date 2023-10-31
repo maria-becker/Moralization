@@ -4,8 +4,8 @@ import xlsxwriter
 
 def inside_of(coord_list, coord_tuple):
     """
-    Checks whether the specific coordinates
-    are inside any of the coordinates on the list
+    Checks whether the specific coordinates of coord_tuple
+    are inside any of the coordinates on the list.
     Returns the first match, or None if there is no match.
     """
 
@@ -17,10 +17,15 @@ def inside_of(coord_list, coord_tuple):
 
 def label_associations(moral_spans_list, label_spans_list):
     """
-    Some moralizing spans have no instance of a specific phenomenon
-    (such as protagonists), others have many. It can be useful (when looking
-    for specific examples) to have a way to find them. This function should
-    make it easy to find all instances of a phenomenon.
+    Takes a list of moral spans and a list of annotation dicts
+    to create a dictionary where the keys are 2-tuples of the
+    beginning and end of a moralization, and the values are
+    lists of 2-tuples of the beginnings and ends of the annotations
+    inside the moralization.
+    If an annotation is outside all moralizing spans, prints
+    'KeyError' to the console. This means that something was
+    falsely annotated, not that the function itself is
+    experiencing an error!
     """
 
     dictionary = {}
@@ -40,10 +45,15 @@ def label_associations(moral_spans_list, label_spans_list):
 
 def label_associations_category(moral_spans_list, label_spans_list):
     """
-    Some moralizing spans have no instance of a specific phenomenon
-    (such as protagonists), others have many. It can be useful (when looking
-    for specific examples) to have a way to find them. This function should
-    make it easy to find all instances of a phenomenon.
+    Takes a list of moral spans and a list of annotation dicts
+    to create a dictionary where the keys are 2-tuples of the
+    beginning and end of a moralization, and the values are
+    lists of dictionaries that contain a 2-tuple and all
+    annotation information.
+    If an annotation is outside all moralizing spans, prints
+    'KeyError' to the console. This means that something was
+    falsely annotated, not that the function itself is
+    experiencing an error!
     """
 
     dictionary = {}
@@ -64,6 +74,11 @@ def label_associations_category(moral_spans_list, label_spans_list):
 
 
 def get_span(text, coordinates):
+    """
+    Takes a corpus string and a 2-tuple. Returns the slice
+    of the 2-tuple if possible;
+    otherwise prints an Error message and returns None.
+    """
     try:
         span = text[coordinates[0]:(coordinates[1])]
         return span
@@ -84,14 +99,24 @@ def special_upper(string):
     return newstring
 
 
-def label_in_list(list, category):
-    for element in list:
+def label_in_list(anno_list, category):
+    """
+    Takes a list of dicts; and if the category passed
+    to this function is somewhere in the values of these
+    dicts, returns True; else, False.
+    """
+    for element in anno_list:
         if category in element.values():
             return True
     return False
 
 
 def possible_labels(category):
+    """
+    Returns lists of possible labels for any given
+    category; for example, returns a list of MFT categories
+    if a _moral category was passed.
+    """
     cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                          'prot_roles', 'prot_groups', 'prot_ownother',
                          'com_functions',
@@ -182,6 +207,9 @@ def calculate_normalized_pmi(contingency_table):
 
 
 def freq_table(corpus, associations1, associations2, label1, label2):
+    """
+    ...
+    """
     counter_1 = 0
     counter_2 = 0
     counter_12 = 0
@@ -229,8 +257,14 @@ def list_to_excel(source_list, filepath):
 
 
 def dict_to_excel(source_dict, filepath):
+    """
+    Takes a dictionary with lists as values and
+    writes the list contents into the first row of an excel
+    file; the values are divided into sections
+    based on the key the are associated with.
+    """
     workbook = xlsxwriter.Workbook(filepath)
-    worksheet = workbook.add_worksheet("list")
+    worksheet = workbook.add_worksheet("dict")
 
     row = 0
     col = 0
@@ -253,7 +287,11 @@ def dict_to_excel(source_dict, filepath):
 
 
 def valid_category(category):
-
+    """
+    Checks whether a string conforms with one of the attributes
+    of a CorpusData object; if not, prints a list of strings
+    that do.
+    """
     possible_categories = ['obj_morals', 'subj_morals', 'all_morals',
                            'protagonists', 'protagonists_doubles',
                            'com_functions',

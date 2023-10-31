@@ -2,6 +2,46 @@ import xml.etree.ElementTree as ET
 
 
 class CorpusData:
+    """
+    A class to represent annotated corpus data.
+    Initialized by passing it a filepath
+    to a corpus in XMI format.
+
+    ...
+
+    Attributes
+    ----------
+    text : str
+        corpus string
+    moralizations : list of 2-tuples
+        beginnings and ends of moralizing segments
+    obj_morals : list of dicts containing 2-tuples and annotation info
+        beginnings and ends of moral value segments, together with their
+        moral category according to MFT
+    subj_morals: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of subjective expression segments, together with
+        their moral category according to MFT
+    all_morals: list of dicts containing 2-tuples and annotation info
+        obj_morals + subj_morals
+    protagonists: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of protagonist segments, together with their
+        three categories they belong to. No duplicate segments!
+    protagonists_doubles: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of protagonist segments, together with their
+        three categories they belong to. Duplicate segments possible, for
+        example when a protagonist has several roles at once!
+    com_functions: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of one or more sentences and their specific
+        communicative function according to Jacobson
+    expl_demands: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of segments containing explicit demands
+    impl_demands: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of segments containing implied demands,
+        and an explication of those demands
+    all_demands: list of dicts containing 2-tuples and annotation info
+        expl_demands + impl_demands
+    """
+
     def __init__(self, filepath):
         self.text = ""
         self.moralizations = []
@@ -18,6 +58,9 @@ class CorpusData:
         self.load_data_from_file(filepath)
 
     def load_data_from_file(self, filepath):
+        """
+        Initializes all attributes with data from an xmi file.
+        """
         self.text = text_from_xmi(filepath)
         self.moralizations = list_moralizations_from_xmi(filepath)
         self.obj_morals = list_obj_moral_from_xmi(filepath)
@@ -36,6 +79,23 @@ class CorpusData:
 
 
 class CorpusCollection:
+    """
+    This class represents a collection of corpus data
+    from several corpora. The data is stored in the form of
+    CorpusData objects (see above).
+
+    ...
+
+    Attributes
+    ----------
+    language: language that the corpus strings are in.
+        options: 'de', 'en', 'it', 'fr',
+                 'all' (if there is more that one language)
+    collection: dict
+        keys are the filepaths; values are associated
+        CorpusData objects
+    """
+
     def __init__(self, filepath_list, language='all'):
         self.collection = {}
         self.language = language
@@ -45,9 +105,8 @@ class CorpusCollection:
 
 def text_from_xmi(filepath):
     """
-    Extracts from the xmi the corpus that the annotations are based on.
-    It is necessary to call this function if you want to output
-    annotated text at some point.
+    Extracts the corpus string that the annotations are based on
+    from an xmi file.
 
     Parameters:
         filepath: The xmi file you want to open.
@@ -68,7 +127,7 @@ def list_moralizations_from_xmi(filepath):
     """
     Takes an xmi file and returns a list with 2-tuples.
     The tuples mark the beginning and ending of spans that were
-    categorized as "moralizing speechacts".
+    categorized as "moralizing speech acts".
 
     Parameters:
         filepath: The xmi file you want to open.
@@ -107,7 +166,8 @@ def list_protagonists_from_xmi(
     skip_duplicates=False
 ):
     """
-    Takes an xmi file and returns a list of dictionaries.
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of 'protagonists'.
     The dictionaries contain:
         "Coordinates": 2-tuples marking the beginning and ending of the span
         "Rolle": the role that was annotated
@@ -121,10 +181,10 @@ def list_protagonists_from_xmi(
                     add them to this list. Example: You don't care about
                     protagonists that don't have a clear role:
                     ignore_list = ["Kein Bezug"].
-                    Default is [].
+                    Default is None.
         skip_duplicates: Protagonists are annotated several times if they
                         have several roles. If this param is set to
-                        true, they are only counted once (Which of their
+                        True, they are only counted once (Which of their
                         several roles is counted is effectively random).
                         Default is False.
     Returns:
@@ -182,6 +242,19 @@ def list_protagonists_from_xmi(
 
 
 def list_obj_moral_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of moral values.
+
+    The dictionaries contain:
+        "Coordinates": 2-tuples marking the beginning and ending of the span
+        "Category": Moral Foundations Dimension of the span
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dictionaries as described above.
+    """
     tree = ET.parse(filepath)
     root = tree.getroot()
 
@@ -205,6 +278,19 @@ def list_obj_moral_from_xmi(filepath):
 
 
 def list_subj_moral_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of subjective expressions.
+
+    The dictionaries contain:
+        "Coordinates": 2-tuples marking the beginning and ending of the span
+        "Category": Moral Foundations Dimension of the span
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dictionaries as described above.
+    """
     tree = ET.parse(filepath)
     root = tree.getroot()
 
@@ -228,6 +314,20 @@ def list_subj_moral_from_xmi(filepath):
 
 
 def list_comfunction_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of communicative functions
+    on or above the sentence level.
+
+    The dictionaries contain:
+        "Coordinates": 2-tuples marking the beginning and ending of the span
+        "Category": Communicative function of the span (after Jacobson)
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dictionaries as described above.
+    """
     tree = ET.parse(filepath)
     root = tree.getroot()
 
@@ -251,6 +351,21 @@ def list_comfunction_from_xmi(filepath):
 
 
 def list_impldemand_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of implicit demands.
+
+    The dictionaries contain:
+        "Coordinates": 2-tuples marking the beginning and ending of the span
+        "Text": simple explication of the demand
+        "Category": always the str "implizit" -
+                    matters for the CorpusData attribute all_demands
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dictionaries as described above.
+    """
     tree = ET.parse(filepath)
     root = tree.getroot()
 
@@ -276,6 +391,20 @@ def list_impldemand_from_xmi(filepath):
 
 
 def list_expldemand_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list of dictionaries
+    representing annotations of explicit demands.
+
+    The dictionaries contain:
+        "Coordinates": 2-tuples marking the beginning and ending of the span
+        "Category": always the str "explizit" -
+                    matters for the CorpusData attribute all_demands
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dictionaries as described above.
+    """
     tree = ET.parse(filepath)
     root = tree.getroot()
 
