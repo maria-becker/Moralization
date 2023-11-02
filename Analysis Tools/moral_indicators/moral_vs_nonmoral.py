@@ -187,7 +187,8 @@ def compare_lemma_likelihood(
     moral_list,
     nonmoral_list,
     lemmata,
-    language="german"
+    language="german",
+    hanta=False
 ):
     """
     This function compares moralizing and non-moralizing segments.
@@ -199,12 +200,14 @@ def compare_lemma_likelihood(
         lemmata,
         combined_mode=True,
         language=language,
+        hanta=hanta
     )
     nonmoral_counts = count_instances_lemma(
         nonmoral_list,
         lemmata,
         combined_mode=True,
-        language=language
+        language=language,
+        hanta=hanta
     )
 
     results = get_stats(
@@ -224,7 +227,8 @@ def compare_pos_likelihood(
     moral_list,
     nonmoral_list,
     pos_list,
-    language='german'
+    language='german',
+    hanta=False
 ):
     """
     This function compares moralizing and non-moralizing segments.
@@ -236,12 +240,14 @@ def compare_pos_likelihood(
         pos_list,
         combined_mode=True,
         language=language,
+        hanta=hanta
     )
     nonmoral_counts = count_instances_pos(
         nonmoral_list,
         pos_list,
         combined_mode=True,
-        language=language
+        language=language,
+        hanta=hanta
     )
 
     results = get_stats(
@@ -298,7 +304,8 @@ def compare_lemma_likelihood_dict(
     moral_list,
     nonmoral_list,
     lemmata,
-    language="german"
+    language="german",
+    hanta=False
 ):
     """
     This function compares moralizing and non-moralizing segments.
@@ -310,12 +317,14 @@ def compare_lemma_likelihood_dict(
         lemmata,
         combined_mode=False,
         language=language,
+        hanta=hanta
     )
     nonmoral_counts = count_instances_lemma(
         nonmoral_list,
         lemmata,
         combined_mode=False,
-        language=language
+        language=language,
+        hanta=hanta
     )
 
     results_dict = {}
@@ -334,7 +343,8 @@ def compare_pos_likelihood_dict(
     moral_list,
     nonmoral_list,
     pos_list,
-    language="german"
+    language="german",
+    hanta=False
 ):
     """
     This function compares moralizing and non-moralizing segments.
@@ -346,12 +356,14 @@ def compare_pos_likelihood_dict(
         pos_list,
         combined_mode=False,
         language=language,
+        hanta=hanta
     )
     nonmoral_counts = count_instances_pos(
         nonmoral_list,
         pos_list,
         combined_mode=False,
-        language=language
+        language=language,
+        hanta=hanta
     )
 
     results_dict = {}
