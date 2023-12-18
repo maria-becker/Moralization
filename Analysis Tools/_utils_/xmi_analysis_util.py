@@ -1,5 +1,6 @@
 import numpy as np
 import xlsxwriter
+import os
 
 
 def inside_of(coord_list, coord_tuple):
@@ -209,7 +210,7 @@ def calculate_normalized_pmi(contingency_table):
 def freq_table(corpus, associations1, associations2, label1, label2):
     """
     Creates a contigency table for two annotation labels. Looks whether
-    the one, both or none of the lables are present at least once 
+    the one, both or none of the lables are present at least once
     for each moralizing segment in the corpus.
 
     Parameters:
@@ -312,3 +313,20 @@ def valid_category(category):
         return False
 
     return True
+
+
+def list_xmis_in_directory(directory):
+    """Creates a list of absolute filepaths to all xmis in a directory.
+
+    Args:
+        directory (str): path to directory
+    """
+
+    filepaths = []
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+
+        if os.path.isfile(filepath) and filepath.endswith('.xmi'):
+            filepaths.append(filepath)
+
+    return filepaths
