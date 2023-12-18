@@ -11,9 +11,28 @@ sys.path.append("../_utils_")
 import xmi_analysis_util as xau
 
 
-def moral_values_freq_collection(corpus_collection, moral_type="all",
-                                 sum_dimensions=False, plot=False,
+def moral_values_freq_collection(corpus_collection,
+                                 moral_type="all",
+                                 sum_dimensions=False,
+                                 plot=False,
                                  export=False):
+    """
+    Creates a Pandas dataframe with the counts of moral values (based on MFT)
+    in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - moral_type: str - valid options are:
+                            obj: concrete moral values
+                            subj: subjective moral expressions
+                            all: both of the above
+        - sum_dimensions: bool. If true, the two sides of moral dimensions
+                          according to MFT (e.g. Care/Harm) are summed into one row.
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
 
     if moral_type not in ['all', 'subj', 'obj']:
         print("Error: Moral_type parameter must be 'all', 'obj', or 'subj'.")
@@ -89,7 +108,20 @@ def moral_values_freq_collection(corpus_collection, moral_type="all",
 
 
 def protagonist_role_freq_collection(corpus_collection,
-                                     plot=False, export=False):
+                                     plot=False,
+                                     export=False):
+    """
+    Creates a Pandas dataframe with the counts of the roles
+    of the protagonists in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Rolle': [
             'Adresassat:in',
@@ -144,7 +176,20 @@ def protagonist_role_freq_collection(corpus_collection,
 
 
 def protagonist_group_freq_collection(corpus_collection,
-                                      plot=False, export=False):
+                                      plot=False,
+                                      export=False):
+    """
+    Creates a Pandas dataframe with the counts of the group categories
+    of the protagonists in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Gruppe': [
             'Individuum',
@@ -189,7 +234,20 @@ def protagonist_group_freq_collection(corpus_collection,
 
 
 def protagonist_ownother_freq_collection(corpus_collection,
-                                         plot=False, export=False):
+                                         plot=False,
+                                         export=False):
+    """
+    Creates a Pandas dataframe with the counts of own group/other group
+    references in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Own/Other': [
             'Own Group',
@@ -224,7 +282,20 @@ def protagonist_ownother_freq_collection(corpus_collection,
 
 
 def comfunction_freq_collection(corpus_collection,
-                                plot=False, export=False):
+                                plot=False,
+                                export=False):
+    """
+    Creates a Pandas dataframe with the counts of communicative functions
+    in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Kommunikative Funktion': [
             'Appell',
@@ -243,24 +314,24 @@ def comfunction_freq_collection(corpus_collection,
     df = pd.DataFrame(df)
 
     for corpus in corpus_collection.collection.values():
-        print(corpus.com_functions)
         for comfunction in corpus.com_functions:
             if (comfunction['Category']
                     in df['Kommunikative Funktion'].values):
                 df.loc[df['Kommunikative Funktion'] ==
                        comfunction['Category'], 'Vorkommen'] += 1
 
-    total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
-
-    df.at[5, 'Vorkommen'] = df.at[1, 'Vorkommen'] + df.at[5, 'Vorkommen']
-    df.at[6, 'Vorkommen'] = df.at[2, 'Vorkommen'] + df.at[6, 'Vorkommen']
-    df.at[7, 'Vorkommen'] = df.at[3, 'Vorkommen'] + df.at[7, 'Vorkommen']
+    df.at[4, 'Vorkommen'] = df.at[1, 'Vorkommen'] + df.at[4, 'Vorkommen']
+    df.at[5, 'Vorkommen'] = df.at[2, 'Vorkommen'] + df.at[5, 'Vorkommen']
+    df.at[6, 'Vorkommen'] = df.at[3, 'Vorkommen'] + df.at[6, 'Vorkommen']
 
     rows_to_delete = ['Beziehung',
                       'Darstellung',
                       'Expression']
     df = df[~df['Kommunikative Funktion'].isin(rows_to_delete)]
+
+    total = df['Vorkommen'].sum()
+    df.at[7, 'Vorkommen'] = total
+    df['Anteil'] = (df['Vorkommen'] / total)
 
     if plot:
         df_nosum = df[df['Kommunikative Funktion'] != 'Summe']
@@ -278,7 +349,20 @@ def comfunction_freq_collection(corpus_collection,
 
 
 def demand_freq_collection(corpus_collection,
-                           plot=False, export=False):
+                           plot=False,
+                           export=False):
+    """
+    Creates a Pandas dataframe with the counts of explicit and implicit
+    demands in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Forderungstyp': [
             'Explizite Forderung',
@@ -311,8 +395,25 @@ def demand_freq_collection(corpus_collection,
     return df
 
 
-def freq_inside_spans_collection(corpus_collection, label_type,
-                                 plot=False, export=False):
+def freq_inside_spans_collection(corpus_collection,
+                                 label_type,
+                                 plot=False,
+                                 export=False):
+    """
+    Creates a Pandas dataframe that represents the absolute frequencies of
+    how often an annotation category appears in a moralizing speech acts.
+    For example, the function can count how many moralizations
+    contain 0, 1, 2, ... references to protagonists.
+    It does this for a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object'
+        - label_type: the annotation category that you're counting
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file
+    Returns:
+        - Pandas dataframe as described above.
+    """
 
     label_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                            'protagonists', 'protagonists_doubles',
@@ -355,7 +456,22 @@ def freq_inside_spans_collection(corpus_collection, label_type,
 
 
 def roles_and_groups_collection(corpus_collection,
-                                relative=False, export=False):
+                                relative=False,
+                                export=False):
+    """
+    Counts how often a specific group of protagonists (such as
+    'individual') is associated with a specific role inside
+    a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df_list = []
     for corpus in corpus_collection.collection.values():
         sub_df = la.roles_groups_table(corpus.protagonists,
@@ -452,8 +568,21 @@ def roles_and_groups_collection(corpus_collection,
 
 
 def groups_and_ownother_collection(corpus_collection,
-                                   percent=False,
+                                   relative=False,
                                    export=False):
+    """
+    Counts how often a specific group of protagonists (such as
+    'individual') is associated with own group/other group identification
+    inside a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
 
     df_list = []
     for corpus in corpus_collection.collection.values():
@@ -464,7 +593,7 @@ def groups_and_ownother_collection(corpus_collection,
     for i in range(0, len(df_list)-1):
         df.iloc[:, 1:] += df_list[i + 1].iloc[:, 1:]
 
-    if percent:
+    if relative:
         df[['Own Group',
             'Other Group',
             'Neutral',
@@ -472,7 +601,7 @@ def groups_and_ownother_collection(corpus_collection,
             = df[['Own Group',
                   'Other Group',
                   'Neutral',
-                  ]].apply(lambda x: x / x.sum() * 100)
+                  ]].apply(lambda x: x / x.sum())
 
     if export:
         df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
@@ -481,8 +610,22 @@ def groups_and_ownother_collection(corpus_collection,
 
 
 def roles_and_ownother_collection(corpus_collection,
-                                  percent=False,
+                                  relative=False,
                                   export=False):
+    """
+    Counts how often a specific roles of protagonists (such as
+    'individual') is associated with own group/other group identification
+    inside a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df_list = []
     for corpus in corpus_collection.collection.values():
         sub_df = la.roles_ownother_table(corpus.protagonists,
@@ -493,7 +636,7 @@ def roles_and_ownother_collection(corpus_collection,
     for i in range(0, len(df_list)-1):
         df.iloc[:, 1:] += df_list[i + 1].iloc[:, 1:]
 
-    if percent:
+    if relative:
         df[['Own Group',
             'Other Group',
             'Neutral',
@@ -501,7 +644,7 @@ def roles_and_ownother_collection(corpus_collection,
             = df[['Own Group',
                   'Other Group',
                   'Neutral',
-                  ]].apply(lambda x: x / x.sum() * 100)
+                  ]].apply(lambda x: x / x.sum())
 
     if export:
         df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
@@ -509,8 +652,29 @@ def roles_and_ownother_collection(corpus_collection,
     return df
 
 
-def association_measure_collection(corpus_collection, cat1, cat2,
-                                   significance=True, export=False):
+def association_measure_collection(corpus_collection,
+                                   cat1,
+                                   cat2,
+                                   significance=True,
+                                   export=False):
+    """
+    For two annotation categories, calculates how every lables in
+    one of the categories is associated with every label of the other
+    category using PMI (pointwise mutual information). Creates a table
+    with the results. It does this for a CorpusCollection object
+    (i.e. all its subcorpora).
+
+    Parameters:
+        - corpus_collection: CorpusCollection object
+        - cat1: str. category you want to associate with the other category
+        - cat2: str. category you want to associate with the other category
+        - significance: bool. If true, calculates the significance with
+                              Fisher's exact test for every association
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                          'prot_roles', 'prot_groups', 'prot_ownother',
                          'com_functions',
@@ -551,7 +715,7 @@ def association_measure_collection(corpus_collection, cat1, cat2,
 
     if significance:
         columns = pd.MultiIndex.from_product([xau.possible_labels(cat2),
-                                             ['Sig', 'PMI']])
+                                             ['Significance', 'PMI']])
         am_df = pd.DataFrame(index=xau.possible_labels(cat1),
                              columns=columns)
         for row_label in am_df.index:
@@ -562,7 +726,7 @@ def association_measure_collection(corpus_collection, cat1, cat2,
                 fisher_sig = stats.fisher_exact(table).pvalue
                 pmi_norm = xau.calculate_normalized_pmi(table)
 
-                am_df.loc[row_label, (col_label, 'Sig')] = fisher_sig
+                am_df.loc[row_label, (col_label, 'Significance')] = fisher_sig
                 am_df.loc[row_label, (col_label, 'PMI')] = pmi_norm
 
     else:
