@@ -203,8 +203,8 @@ def calculate_normalized_pmi(contingency_table):
         return float('-inf')  # Avoid log(0)
 
     pmi = np.log2(p_x_and_y / ((p_x * p_y) / total_segments))
-    jsi = np.log2(p_x_and_y / total_segments)
-    return (pmi / (-1 * jsi))
+    jsi = -1 * np.log2(p_x_and_y / total_segments)
+    return (pmi / jsi)
 
 
 def freq_table(corpus, associations1, associations2, label1, label2):

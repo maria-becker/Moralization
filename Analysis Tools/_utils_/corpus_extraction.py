@@ -1,3 +1,19 @@
+"""Corpus Data Extraction from .XMI files
+
+This module provides classes and functions that make it possible to
+extract corpus data and annotation from an .xmi file.
+The corpus/file must be in the annotation format used by the
+Moralization Project @University of Heidelberg, see here:
+https://github.com/maria-becker/Moralization.
+
+The module's classes are used by most other modules
+in the 'Analysis Tools' directory, but provide no immediate
+analysis options themselves.
+
+Author: Bruno Brocai
+"""
+
+
 import xml.etree.ElementTree as ET
 
 
@@ -7,7 +23,6 @@ class CorpusData:
     Initialized by passing it a filepath
     to a corpus in XMI format.
 
-    ...
 
     Attributes
     ----------
@@ -43,6 +58,10 @@ class CorpusData:
     """
 
     def __init__(self, filepath):
+        """
+        Initializes all attributes with data from an xmi file
+        specified by filepath.
+        """
         self.text = ""
         self.moralizations = []
         self.obj_morals = []
@@ -59,7 +78,8 @@ class CorpusData:
 
     def load_data_from_file(self, filepath):
         """
-        Initializes all attributes with data from an xmi file.
+        Assigns values to all attributes using data from an xmi file
+        specified by filepath.
         """
         self.text = text_from_xmi(filepath)
         self.moralizations = list_moralizations_from_xmi(filepath)
@@ -83,9 +103,6 @@ class CorpusCollection:
     This class represents a collection of corpus data
     from several corpora. The data is stored in the form of
     CorpusData objects (see above).
-
-    ...
-
     Attributes
     ----------
     language: language that the corpus strings are in.
@@ -154,7 +171,7 @@ def list_moralizations_from_xmi(filepath):
                 if coordinates not in moral_spans_list:
                     moral_spans_list.append(coordinates)
                 else:
-                    # print('Error: ', str(coordinates))
+                    # print('Duplicate: ', test)
                     pass
 
     return moral_spans_list
