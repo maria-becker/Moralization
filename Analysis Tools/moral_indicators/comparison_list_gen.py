@@ -146,7 +146,7 @@ def lemmata_in_annotations(
     return lemma_dict
 
 
-def pos_lemmata_in_annotations(
+def pos_in_annotations(
         pos_list,
         label_type,
         language,
