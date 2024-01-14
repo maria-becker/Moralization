@@ -129,8 +129,8 @@ def list_moral_from_xlsx(filepath, sheet_name, rm_duplicates=True):
         list of strings which were annotated as moralizations.
     """
 
-    print("".join(("Warning: Use list_moralization__strings_from_xmi() ",
-                   "instead of list_moral_from_xlsx() if possible.")))
+    print(("Warning: Use list_moralization__strings_from_xmi() "
+           "instead of list_moral_from_xlsx() if possible."))
 
     excel_file = pd.ExcelFile(filepath)
     df = excel_file.parse('spans_out')
