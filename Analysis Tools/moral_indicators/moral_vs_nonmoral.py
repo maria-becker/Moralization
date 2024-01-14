@@ -73,6 +73,7 @@ def count_instances_lemma(
 
         # Loop through the rows in the dataframe of moralizing segments
         for doc in text_list:
+            doc = doc.replace('#', '')  # Data may contain '#' for highlighting
             tokenized_sents = nltk.tokenize.word_tokenize(
                 doc, language=language)
             tags = tagger.tag_sent(tokenized_sents)
@@ -86,6 +87,7 @@ def count_instances_lemma(
         model = spacy.load(f'{language}_core_news_md')
 
         for doc in text_list:
+            doc = doc.replace('#', '')  # Data may contain '#' for highlighting
             tagged = model(doc)
             for tag in tagged:
                 comparison_dict["_total_"] += 1
@@ -124,6 +126,7 @@ def count_instances_pos(
 
         # Loop through the rows in the dataframe of moralizing segments
         for doc in text_list:
+            doc = doc.replace('#', '')  # Data may contain '#' for highlighting
             tokenized_sents = nltk.tokenize.word_tokenize(
                 doc, language=language)
             tags = tagger.tag_sent(tokenized_sents)
@@ -137,6 +140,7 @@ def count_instances_pos(
         model = spacy.load(f'{language}_core_news_md')
 
         for doc in text_list:
+            doc = doc.replace('#', '')  # Data may contain '#' for highlighting
             tagged = model(doc)
             for tag in tagged:
                 comparison_dict["_total_"] += 1
@@ -165,6 +169,7 @@ def count_instances_token(
 
     # Loop through the rows in the dataframe of moralizing segments
     for doc in text_list:
+        doc = doc.replace('#', '')  # Data may contain '#' for highlighting
         tokenized_sents = nltk.tokenize.word_tokenize(
             doc, language=language)
         lower_sents = [word.lower() for word in tokenized_sents]
