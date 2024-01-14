@@ -212,8 +212,7 @@ def protagonist_group_freq_collection(corpus_collection,
         df['Vorkommen'] = df['Vorkommen'].add(sub_df['Vorkommen'],
                                               axis='index')
 
-    total = df['Vorkommen'].sum()
-    df['Anteil'] = (df['Vorkommen'] / total)
+    df['Anteil'] = (df['Vorkommen'] / df['Vorkommen'][5])
 
     if plot:
         df_nosum = df[df['Gruppe'] != 'Summe']
