@@ -9,8 +9,28 @@ sys.path.append("../_utils_")
 import xmi_analysis_util as xau
 
 
-def moral_values_freq(corpus, moral_type="all",
-                      sum_dimensions=False, plot=False, export=False):
+def moral_values_freq(corpus,
+                      moral_type="all",
+                      sum_dimensions=False,
+                      plot=False,
+                      export=False):
+    """
+    Creates a Pandas dataframe with the counts of moral values (based on MFT)
+    in a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - moral_type: str - valid options are:
+                            obj: concrete moral values
+                            subj: subjective moral expressions
+                            all: both of the above
+        - sum_dimensions: bool. If true, the two sides of moral dimensions
+                          according to MFT (e.g. Care/Harm) are summed into one row.
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
 
     if moral_type == "all":
         value_list = corpus.all_morals
@@ -99,7 +119,23 @@ def moral_values_freq(corpus, moral_type="all",
     return df
 
 
-def protagonist_role_freq(corpus, language, plot=False, export=False):
+def protagonist_role_freq(corpus,
+                          language,
+                          plot=False,
+                          export=False):
+    """
+    Creates a Pandas dataframe with the counts of the roles
+    of the protagonists in a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - language: the language of the corpus
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Rolle': [
             'Adresassat:in',
@@ -152,7 +188,21 @@ def protagonist_role_freq(corpus, language, plot=False, export=False):
     return df
 
 
-def protagonist_group_freq(corpus, plot=False, export=False):
+def protagonist_group_freq(corpus,
+                           plot=False,
+                           export=False):
+    """
+    Creates a Pandas dataframe with the counts of the group categories
+    of the protagonists in a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Gruppe': [
             'Individuum',
@@ -197,7 +247,21 @@ def protagonist_group_freq(corpus, plot=False, export=False):
     return df
 
 
-def protagonist_ownother_freq(corpus, plot=False, export=False):
+def protagonist_ownother_freq(corpus,
+                              plot=False,
+                              export=False):
+    """
+    Creates a Pandas dataframe with the counts of own group/other group
+    references in a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Own/Other': [
             'Own Group',
@@ -240,7 +304,23 @@ def protagonist_ownother_freq(corpus, plot=False, export=False):
     return df
 
 
-def comfunction_freq(corpus, language, plot=False, export=False):
+def comfunction_freq(corpus,
+                     language,
+                     plot=False,
+                     export=False):
+    """
+    Creates a Pandas dataframe with the counts of communicative functions
+    in a CorpusCollection object (i.e. in all subcorpora).
+
+    Parameters:
+        - corpus: CorpusData object
+        - language: the language the corpus is in
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Kommunikative Funktion': [
             'Appell',
@@ -302,7 +382,21 @@ def comfunction_freq(corpus, language, plot=False, export=False):
     return df
 
 
-def demand_freq(corpus, plot=False, export=False):
+def demand_freq(corpus,
+                plot=False,
+                export=False):
+    """
+    Creates a Pandas dataframe with the counts of explicit and implicit
+    demands in a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = {
         'Forderungstyp': [
             'Explizite Forderung',
@@ -340,6 +434,21 @@ def demand_freq(corpus, plot=False, export=False):
 
 
 def freq_inside_spans(corpus, label_type, plot=False, export=False):
+    """
+    Creates a Pandas dataframe that represents the absolute frequencies of
+    how often an annotation category appears in a moralizing speech acts.
+    For example, the function can count how many moralizations
+    contain 0, 1, 2, ... references to protagonists.
+
+    Parameters:
+        - corpus: CorpusData object'
+        - label_type: the annotation category that you're counting
+        - plot: bool. If true, output a plot of the results
+        - export: bool. If true, store results in a csv file
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     label_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                            'protagonists', 'protagonists_doubles',
                            'com_functions',
@@ -386,6 +495,20 @@ def freq_inside_spans(corpus, label_type, plot=False, export=False):
 
 
 def roles_and_groups(corpus, language, percent=False, export=False):
+    """
+    Counts how often a specific group of protagonists (such as
+    'individual') is associated with a specific role inside
+    a CorpusData object.
+
+    Parameters:
+        - corpus_collection: CorpusData object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = la.roles_groups_table(corpus.protagonists, language)
 
     if percent:
@@ -423,6 +546,20 @@ def roles_and_groups(corpus, language, percent=False, export=False):
 
 
 def groups_and_ownother(corpus, percent=False, export=False):
+    """
+    Counts how often a specific group of protagonists (such as
+    'individual') is associated with own group/other group identification
+    inside a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = la.groups_ownother_table(corpus.protagonists)
 
     if percent:
@@ -442,6 +579,20 @@ def groups_and_ownother(corpus, percent=False, export=False):
 
 
 def roles_and_ownother(corpus, language, percent=False, export=False):
+    """
+    Counts how often a specific roles of protagonists (such as
+    'individual') is associated with own group/other group identification
+    inside a CorpusData object.
+
+    Parameters:
+        - corpus: CorpusCollection object
+        - relative: bool. If true, calculate relative frequencies
+                          of every association.
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     df = la.roles_ownother_table(corpus.protagonists, language)
 
     if percent:
@@ -460,8 +611,28 @@ def roles_and_ownother(corpus, language, percent=False, export=False):
     return df
 
 
-def association_measure(corpus, cat1, cat2,
-                        significance=True, export=True):
+def association_measure(corpus,
+                        cat1,
+                        cat2,
+                        significance=True,
+                        export=True):
+    """
+    For two annotation categories, calculates how every lables in
+    one of the categories is associated with every label of the other
+    category using PMI (pointwise mutual information). Creates a table
+    with the results. It does this for a single CorpusData object.
+
+    Parameters:
+        - corpus: CorpusData object
+        - cat1: str. category you want to associate with the other category
+        - cat2: str. category you want to associate with the other category
+        - significance: bool. If true, calculates the significance with
+                              Fisher's exact test for every association
+        - export: bool. If true, store results in a csv file.
+    Returns:
+        - Pandas dataframe as described above.
+    """
+
     cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
                          'prot_roles', 'prot_groups', 'prot_ownother',
                          'com_functions',
