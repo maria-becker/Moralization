@@ -19,7 +19,7 @@ Get examples of specific phenomena or perform statistical and linguistic analyse
 
 
 ## Dependencies
-The code was tested on Python3.12, though it might work with Python versions 3.7 and up.
+The code was tested on Python3.10 and 3.12, though it might work with Python versions 3.7 and up.
 
 Before running this code, make sure you have the following dependencies installed:
 + NLTK
