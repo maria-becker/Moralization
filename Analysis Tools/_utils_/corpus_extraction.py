@@ -64,6 +64,9 @@ class CorpusData:
         """
         self.text = ""
         self.moralizations = []
+        # an extended version of self.moralization which not only contains the span widht
+        # but also the type of moralization
+        self.moralizations_extended = []
         self.obj_morals = []
         self.subj_morals = []
         self.all_morals = []
@@ -83,6 +86,7 @@ class CorpusData:
         """
         self.text = text_from_xmi(filepath)
         self.moralizations = list_moralizations_from_xmi(filepath)
+        self.moralizations_extended = list_extended_moralizations_from_xmi(filepath)
         self.obj_morals = list_obj_moral_from_xmi(filepath)
         self.subj_morals = list_subj_moral_from_xmi(filepath)
         self.all_morals = self.obj_morals + self.subj_morals
@@ -158,23 +162,59 @@ def list_moralizations_from_xmi(filepath):
 
     span_list = root.findall("{http:///custom.ecore}Span")
 
+    
     # Get all moralizing instances
     moral_spans_list = []
     for span in span_list:
-        test = span.get('KAT1MoralisierendesSegment')
 
-        if test:
-            if test != "Keine Moralisierung":
+        label = span.get('KAT1MoralisierendesSegment')
+        
+        if label:
+            if label != "Keine Moralisierung":
                 coordinates = (int(span.get("begin")), int(span.get("end")))
 
                 # Test for duplicates, as there are some in the data
                 if coordinates not in moral_spans_list:
                     moral_spans_list.append(coordinates)
-                else:
-                    # print('Duplicate: ', test)
-                    pass
 
     return moral_spans_list
+
+def list_extended_moralizations_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list consisting of dicts.
+    The tuples mark the beginning and ending of spans that were
+    categorized as "moralizing speech acts".
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of dicts of form: [{Coordinates: (x, y), Label: String}, ...]
+    """
+
+    # Open the XMI file
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    
+    # Get all moralizing instances
+    moral_spans_list = []
+    moral_spans_list_extended = []
+    for span in span_list:
+
+        label = span.get('KAT1MoralisierendesSegment')
+        
+        if label:
+            if label != "Keine Moralisierung":
+                coordinates = (int(span.get("begin")), int(span.get("end")))
+
+                # Test for duplicates, as there are some in the data
+                if coordinates not in moral_spans_list:
+                    moral_spans_list.append(coordinates)
+                    moral_spans_list_extended.append({'Coordinates': coordinates, 'Label': label})
+
+    return moral_spans_list_extended
 
 
 def list_protagonists_from_xmi(
