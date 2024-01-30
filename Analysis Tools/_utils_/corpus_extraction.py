@@ -31,6 +31,8 @@ class CorpusData:
         corpus string
     moralizations : list of 2-tuples
         beginnings and ends of moralizing segments
+    moralizations_extended : an extended version of moralization which not only contains the span widht
+        but also the type of moralization
     obj_morals : list of dicts containing 2-tuples and annotation info
         beginnings and ends of moral value segments, together with their
         moral category according to MFT
@@ -65,8 +67,7 @@ class CorpusData:
         """
         self.text = ""
         self.moralizations = []
-        # an extended version of self.moralization which not only contains the span widht
-        # but also the type of moralization
+        
         self.moralizations_extended = []
         self.obj_morals = []
         self.subj_morals = []
@@ -220,7 +221,7 @@ def list_extended_moralizations_from_xmi(filepath):
 
 def list_protagonists_from_xmi(
     filepath,
-    ignore_list=None,
+    ignore_list=[],
     skip_duplicates=False
 ):
     """
@@ -248,9 +249,6 @@ def list_protagonists_from_xmi(
     Returns:
         List of dictionaries as described above.
     """
-
-    if ignore_list is None:
-        ignore_list = []
 
     # Open the XMI file
     tree = ET.parse(filepath)
