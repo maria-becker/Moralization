@@ -17,6 +17,7 @@ Author: Bruno Brocai
 import xml.etree.ElementTree as ET
 
 
+
 class CorpusData:
     """
     A class to represent annotated corpus data.
