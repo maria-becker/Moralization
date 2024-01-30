@@ -60,7 +60,7 @@ class CorpusData:
         expl_demands + impl_demands
     """
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, ignore_list=[]):
         """
         Initializes all attributes with data from an xmi file
         specified by filepath.
@@ -79,9 +79,9 @@ class CorpusData:
         self.impl_demands = []
         self.all_demands = []
 
-        self.load_data_from_file(filepath)
+        self.load_data_from_file(filepath, ignore_list)
 
-    def load_data_from_file(self, filepath):
+    def load_data_from_file(self, filepath, ignore_list):
         """
         Assigns values to all attributes using data from an xmi file
         specified by filepath.
@@ -97,11 +97,55 @@ class CorpusData:
             skip_duplicates=True)
         self.protagonists_doubles = list_protagonists_from_xmi(
             filepath,
-            skip_duplicates=False)
+            skip_duplicates=False,
+            ignore_list=ignore_list)
         self.com_functions = list_comfunction_from_xmi(filepath)
         self.expl_demands = list_expldemand_from_xmi(filepath)
         self.impl_demands = list_impldemand_from_xmi(filepath)
         self.all_demands = self.expl_demands + self.impl_demands
+
+
+
+class XMI_TO_CORPUS_OBJECT:
+
+    def __init__(self, filepath_list, language='all', ignore_list=[]):
+
+        self.text = ""
+        self.moralizations = []
+        self.moralizations_extended = []
+        self.obj_morals = []
+        self.subj_morals = []
+        self.all_morals = []
+        self.protagonists = []
+        self.protagonists_doubles = []
+        self.com_functions = []
+        self.expl_demands = []
+        self.impl_demands = []
+        self.all_demands = []
+
+
+        # was bewirkt das?
+        self.language = language
+
+
+        for filepath in filepath_list:
+            sub_corpus = CorpusData(filepath, ignore_list=ignore_list)
+            self.text += sub_corpus.text
+            self.moralizations += sub_corpus.moralizations
+            self.moralizations_extended += sub_corpus.moralizations_extended
+            self.obj_morals += sub_corpus.obj_morals
+            self.subj_morals += sub_corpus.subj_morals
+            self.all_morals += sub_corpus.all_morals
+            self.protagonists += sub_corpus.protagonists
+            self.protagonists_doubles += sub_corpus.protagonists_doubles
+            self.com_functions += sub_corpus.com_functions
+            self.expl_demands += sub_corpus.expl_demands
+            self.impl_demands += sub_corpus.impl_demands
+            self.all_demands += sub_corpus.all_demands
+
+
+
+
 
 
 class CorpusCollection:
@@ -119,11 +163,11 @@ class CorpusCollection:
         CorpusData objects
     """
 
-    def __init__(self, filepath_list, language='all'):
+    def __init__(self, filepath_list, language='all', ignore_list=[]):
         self.collection = {}
         self.language = language
         for filepath in filepath_list:
-            self.collection[filepath] = CorpusData(filepath)
+            self.collection[filepath] = CorpusData(filepath, ignore_list=ignore_list)
 
 
 def text_from_xmi(filepath):
@@ -481,3 +525,14 @@ def list_expldemand_from_xmi(filepath):
             demand_list.append(data_dict)
 
     return demand_list
+
+
+
+# DEBUGGING
+if __name__ == "__main__":
+    filepath = [
+        r"C:\Users\ed304\Documents\Moralization\Testfiles\test_gerichtsurteile_DE.xmi",
+        r"C:\Users\ed304\Documents\Moralization\Testfiles\test_plenar_FR.xmi"
+    ]
+    corpus = XMI_TO_CORPUS_OBJECT(filepath, ignore_list=[])
+    print(type(corpus.moralizations))
