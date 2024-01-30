@@ -18,46 +18,10 @@ import xml.etree.ElementTree as ET
 
 
 
-class CorpusData:
+class XMI_READER:
+
     """
-    A class to represent annotated corpus data.
-    Initialized by passing it a filepath
-    to a corpus in XMI format.
-
-
-    Attributes
-    ----------
-    text : str
-        corpus string
-    moralizations : list of 2-tuples
-        beginnings and ends of moralizing segments
-    moralizations_extended : an extended version of moralization which not only contains the span widht
-        but also the type of moralization
-    obj_morals : list of dicts containing 2-tuples and annotation info
-        beginnings and ends of moral value segments, together with their
-        moral category according to MFT
-    subj_morals: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of subjective expression segments, together with
-        their moral category according to MFT
-    all_morals: list of dicts containing 2-tuples and annotation info
-        obj_morals + subj_morals
-    protagonists: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of protagonist segments, together with their
-        three categories they belong to. No duplicate segments!
-    protagonists_doubles: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of protagonist segments, together with their
-        three categories they belong to. Duplicate segments possible, for
-        example when a protagonist has several roles at once!
-    com_functions: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of one or more sentences and their specific
-        communicative function according to Jacobson
-    expl_demands: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of segments containing explicit demands
-    impl_demands: list of dicts containing 2-tuples and annotation info
-        beginnings and ends of segments containing implied demands,
-        and an explication of those demands
-    all_demands: list of dicts containing 2-tuples and annotation info
-        expl_demands + impl_demands
+    This class reads data from an annotated xmi file.
     """
 
     def __init__(self, filepath, ignore_list=[]):
@@ -107,6 +71,44 @@ class CorpusData:
 
 
 class XMI_TO_CORPUS_OBJECT:
+    """
+    A class to represent annotated corpus data.
+    Single or multiple corpora can be passed.
+
+    Attributes
+    ----------
+    text : str
+        corpus string
+    moralizations : list of 2-tuples
+        beginnings and ends of moralizing segments
+    moralizations_extended : an extended version of moralization which not only contains the span widht
+        but also the type of moralization
+    obj_morals : list of dicts containing 2-tuples and annotation info
+        beginnings and ends of moral value segments, together with their
+        moral category according to MFT
+    subj_morals: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of subjective expression segments, together with
+        their moral category according to MFT
+    all_morals: list of dicts containing 2-tuples and annotation info
+        obj_morals + subj_morals
+    protagonists: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of protagonist segments, together with their
+        three categories they belong to. No duplicate segments!
+    protagonists_doubles: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of protagonist segments, together with their
+        three categories they belong to. Duplicate segments possible, for
+        example when a protagonist has several roles at once!
+    com_functions: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of one or more sentences and their specific
+        communicative function according to Jacobson
+    expl_demands: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of segments containing explicit demands
+    impl_demands: list of dicts containing 2-tuples and annotation info
+        beginnings and ends of segments containing implied demands,
+        and an explication of those demands
+    all_demands: list of dicts containing 2-tuples and annotation info
+        expl_demands + impl_demands
+    """
 
     def __init__(self, filepath_list, language='all', ignore_list=[]):
 
@@ -535,4 +537,3 @@ if __name__ == "__main__":
         r"C:\Users\ed304\Documents\Moralization\Testfiles\test_plenar_FR.xmi"
     ]
     corpus = XMI_TO_CORPUS_OBJECT(filepath, ignore_list=[])
-    print(type(corpus.moralizations))
