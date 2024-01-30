@@ -131,7 +131,7 @@ class XMI_TO_CORPUS_OBJECT:
 
 
         for filepath in filepath_list:
-            sub_corpus = CorpusData(filepath, ignore_list=ignore_list)
+            sub_corpus = XMI_READER(filepath, ignore_list=ignore_list)
             self.text += sub_corpus.text
             self.moralizations += sub_corpus.moralizations
             self.moralizations_extended += sub_corpus.moralizations_extended
