@@ -64,6 +64,7 @@ class CorpusData:
         """
         self.text = ""
         self.moralizations = []
+        self.detailed_moralizations = []
         self.obj_morals = []
         self.subj_morals = []
         self.all_morals = []
@@ -83,6 +84,9 @@ class CorpusData:
         """
         self.text = text_from_xmi(filepath)
         self.moralizations = list_moralizations_from_xmi(filepath)
+        self.detailed_moralizations = list_detailed_moralizations_from_xmi(
+            filepath
+        )
         self.obj_morals = list_obj_moral_from_xmi(filepath)
         self.subj_morals = list_subj_moral_from_xmi(filepath)
         self.all_morals = self.obj_morals + self.subj_morals
@@ -140,6 +144,41 @@ def text_from_xmi(filepath):
     return text
 
 
+def list_detailed_moralizations_from_xmi(filepath):
+    """
+    Takes an xmi file and returns a list with 2-tuples.
+    The tuples mark the beginning and ending of spans that were
+    categorized as "moralizing speech acts".
+
+    Parameters:
+        filepath: The xmi file you want to open.
+    Returns:
+        List of 2-tuples.
+    """
+
+    # Open the XMI file
+    tree = ET.parse(filepath)
+    root = tree.getroot()
+
+    span_list = root.findall("{http:///custom.ecore}Span")
+
+    # Get all moralizing instances
+    moral_spans_list = []
+    for span in span_list:
+        label = span.get('KAT1MoralisierendesSegment')
+
+        if label:
+            data_dict = {
+                "Coordinates":
+                    (int(span.get("begin")), int(span.get("end"))),
+                "Category":
+                    label
+            }
+            moral_spans_list.append(data_dict)
+
+    return list(set(moral_spans_list))  # remove duplicates
+
+
 def list_moralizations_from_xmi(filepath):
     """
     Takes an xmi file and returns a list with 2-tuples.
@@ -166,15 +205,9 @@ def list_moralizations_from_xmi(filepath):
         if test:
             if test != "Keine Moralisierung":
                 coordinates = (int(span.get("begin")), int(span.get("end")))
+                moral_spans_list.append(coordinates)
 
-                # Test for duplicates, as there are some in the data
-                if coordinates not in moral_spans_list:
-                    moral_spans_list.append(coordinates)
-                else:
-                    # print('Duplicate: ', test)
-                    pass
-
-    return moral_spans_list
+    return list(set(moral_spans_list))  # remove duplicates
 
 
 def list_protagonists_from_xmi(
@@ -213,8 +246,7 @@ def list_protagonists_from_xmi(
 
     # Open the XMI file
     tree = ET.parse(filepath)
-    root = tree.getroot()
-    span_list = root.findall("{http:///custom.ecore}Span")
+    span_list = tree.findall("{http:///custom.ecore}Span")
 
     # Get all protagonist spans
     protagonist_spans_list = []
@@ -273,9 +305,8 @@ def list_obj_moral_from_xmi(filepath):
         List of dictionaries as described above.
     """
     tree = ET.parse(filepath)
-    root = tree.getroot()
 
-    span_list = root.findall("{http:///custom.ecore}Span")
+    span_list = tree.findall("{http:///custom.ecore}Span")
 
     # Get all moralizing instances
     morals_list = []
