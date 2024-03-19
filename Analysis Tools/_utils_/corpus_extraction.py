@@ -17,7 +17,7 @@ Author: Bruno Brocai
 import xml.etree.ElementTree as ET
 
 
-class CorpusData:
+class SubCorpus:
     """
     A class to represent annotated corpus data.
     Initialized by passing it a filepath
@@ -102,7 +102,7 @@ class CorpusData:
         self.all_demands = self.expl_demands + self.impl_demands
 
 
-class CorpusCollection:
+class Corpus:
     """
     This class represents a collection of corpus data
     from several corpora. The data is stored in the form of
@@ -117,11 +117,23 @@ class CorpusCollection:
         CorpusData objects
     """
 
-    def __init__(self, filepath_list, language='all'):
+    def __init__(self, filepaths, language='all'):
+        if isinstance(filepaths, str):
+            filepaths = [filepaths]
         self.collection = {}
         self.language = language
-        for filepath in filepath_list:
-            self.collection[filepath] = CorpusData(filepath)
+        for filepath in filepaths:
+            self.collection[filepath] = SubCorpus(filepath)
+
+    def concat_annos(self, annotation):
+        """
+        Concatenates the annotations of all corpora in the collection
+        into one list.
+        """
+        result = []
+        for corpus in self.collection.values():
+            result += getattr(corpus, annotation)
+        return result
 
 
 def text_from_xmi(filepath):
@@ -176,7 +188,7 @@ def list_detailed_moralizations_from_xmi(filepath):
             }
             moral_spans_list.append(data_dict)
 
-    return list(set(moral_spans_list))  # remove duplicates
+    return moral_spans_list
 
 
 def list_moralizations_from_xmi(filepath):
