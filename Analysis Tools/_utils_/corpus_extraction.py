@@ -15,6 +15,7 @@ Author: Bruno Brocai
 
 
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 
 class SubCorpus:
@@ -134,6 +135,43 @@ class Corpus:
         for corpus in self.collection.values():
             result += getattr(corpus, annotation)
         return result
+
+    def concat_annos_coords(self, annotation):
+        result = []
+        prev_len = 0
+        for corpus in self.collection.values():
+            for anno in getattr(corpus, annotation):
+                anno_copy = deepcopy(anno)
+                old_begin, old_end = anno_copy['Coordinates']
+                anno_copy['Coordinates'] = (
+                    old_begin + prev_len,
+                    old_end + prev_len
+                )
+                result.append(anno_copy)
+            prev_len += len(corpus.text)
+        return result
+
+    def concat_coords(self, moralizations):
+        result = []
+        prev_len = 0
+        for corpus in self.collection.values():
+            for anno in getattr(corpus, moralizations):
+                new_begin = anno[0] + prev_len
+                new_end = anno[1] + prev_len
+                result.append((new_begin, new_end))
+            prev_len += len(corpus.text)
+        return result
+
+    def filter_out(self, annotation, filter_out_list):
+        for subcorpus in self.collection.values():
+            remove_indices = []
+            for index, anno in enumerate(getattr(subcorpus, annotation)):
+                for label in anno.values():
+                    if label in filter_out_list:
+                        remove_indices.append(index)
+                        break
+            for index in sorted(remove_indices, reverse=True):
+                del getattr(subcorpus, annotation)[index]
 
 
 def text_from_xmi(filepath):

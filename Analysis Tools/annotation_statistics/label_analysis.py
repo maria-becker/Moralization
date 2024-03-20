@@ -65,7 +65,7 @@ def label_freq_table(moral_spans_list, protagonist_spans_list):
     return freq_table
 
 
-def roles_groups_table(protagonists, language='all'):
+def roles_groups_table(protagonists):
     """
     For a given genres, creates a dataframe that shows
     how different label categories are associated.
@@ -84,7 +84,7 @@ def roles_groups_table(protagonists, language='all'):
                 "soziale Gruppe",
                 "Sonstige"
             ],
-            'Adresassat:in': [
+            'Adressat:in': [
                 0, 0, 0, 0, 0
             ],
             'Benefizient:in': [
@@ -118,12 +118,6 @@ def roles_groups_table(protagonists, language='all'):
             data_dict[rolle][4] += 1
 
     df = pd.DataFrame(data_dict)
-
-    if language.lower() == 'de':
-        df.drop('Malefizient:in', axis=1, inplace=True)
-        df.drop('Bezug unklar', axis=1, inplace=True)
-    elif language.lower() != 'all':
-        df.drop('Kein Bezug', axis=1, inplace=True)
 
     return df
 
@@ -191,7 +185,7 @@ def roles_ownother_table(protagonists, language='all'):
 
     data_dict = {
             'Kategorie': [
-                "Adresassat:in",
+                "Adressat:in",
                 "Benefizient:in",
                 "Forderer:in",
                 "Malefizient:in",
@@ -213,7 +207,7 @@ def roles_ownother_table(protagonists, language='all'):
         ownother = protagonist["own/other"]
         if ownother is None:
             continue
-        if protagonist["Rolle"] == "Adresassat:in":
+        if protagonist["Rolle"] == "Adressat:in":
             data_dict[ownother][0] += 1
         elif protagonist["Rolle"] == "Benefizient:in":
             data_dict[ownother][1] += 1
@@ -255,21 +249,23 @@ def table_table(corpus, cat1, cat2):
                              columns=xau.possible_labels(cat2))
 
     associations1 = xau.label_associations_category(
-        corpus.moralizations,
-        getattr(corpus, cat1_trans)
+        corpus.concat_coords("moralizations"),
+        corpus.concat_annos_coords(cat1_trans)
     )
     associations2 = xau.label_associations_category(
-        corpus.moralizations,
-        getattr(corpus, cat2_trans)
+        corpus.concat_coords("moralizations"),
+        corpus.concat_annos_coords(cat2_trans)
     )
 
     for row_label in df_tables.index:
         for col_label in xau.possible_labels(cat2):
-            table = xau.freq_table(corpus,
-                                   associations1,
-                                   associations2,
-                                   row_label,
-                                   col_label)
+            table = xau.freq_table(
+                corpus,
+                associations1,
+                associations2,
+                row_label,
+                col_label
+            )
             df_tables.loc[row_label, col_label] = table
 
     return df_tables

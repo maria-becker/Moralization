@@ -12,10 +12,9 @@ def get_moral_df(sum_dimensions):
                 'Sanctity/degradation',
                 'Liberty/oppression',
                 'OTHER',
-                'Summe'
             ],
             'Vorkommen': [
-                0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0
             ]
         }
     else:
@@ -34,11 +33,10 @@ def get_moral_df(sum_dimensions):
                 'Liberty',
                 'Oppression',
                 'OTHER',
-                'Summe'
             ],
             'Vorkommen': [
                 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0
             ]
         }
     df = pd.DataFrame(df)
@@ -49,17 +47,15 @@ def get_moral_df(sum_dimensions):
 def get_prot_role_df():
     df = {
         'Rolle': [
-            'Adresassat:in',
+            'Adressat:in',
             'Benefizient:in',
             'Forderer:in',
             'Malefizient:in',
             'Kein Bezug',
             'Bezug unklar',
-            'Bezug unklar/kein Bezug',
-            'Summe'
         ],
         'Vorkommen': [
-            0, 0, 0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, 0
         ]
     }
     df = pd.DataFrame(df)
@@ -75,10 +71,9 @@ def get_prot_group_df():
             'Menschen',
             'soziale Gruppe',
             'OTHER',
-            'Summe'
         ],
         'Vorkommen': [
-            0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0
         ]
     }
     df = pd.DataFrame(df)
@@ -97,10 +92,9 @@ def get_comfunction_df():
             'Appell+Beziehung',
             'Appell+Darstellung',
             'Appell+Expression',
-            'Summe'
         ],
         'Vorkommen': [
-            0, 0, 0, 0, 0, 0, 0, 0
+            0, 0, 0, 0, 0, 0, 0
         ]
     }
     df = pd.DataFrame(df)
@@ -113,10 +107,9 @@ def get_demand_df():
         'Forderungstyp': [
             'Explizite Forderung',
             'Implizite Forderung',
-            'Summe'
         ],
         'Vorkommen': [
-            0, 0, 0
+            0, 0
         ]
     }
     df = pd.DataFrame(df)

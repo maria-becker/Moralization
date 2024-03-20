@@ -10,6 +10,36 @@ sys.path.append("../_utils_")
 import xmi_analysis_util as xau
 
 
+def label_frequency(
+    corpus,
+    label,
+    sum_dimensions=False,  # only relevant for moral values
+    **kwargs
+):
+    match label:
+        case "prot_roles":
+            df = protagonist_role_freq(corpus, kwargs)
+        case "prot_groups":
+            df = protagonist_group_freq(corpus, kwargs)
+        case "com_functions":
+            df = comfunction_freq(corpus, kwargs)
+        case "demands":
+            df = demand_freq(corpus, kwargs)
+        case "obj_morals":
+            df = moral_values_freq(corpus, "obj", sum_dimensions, kwargs)
+        case "subj_morals":
+            df = moral_values_freq(corpus, "subj", sum_dimensions, kwargs)
+        case "all_morals":
+            df = moral_values_freq(corpus, "all", sum_dimensions, kwargs)
+        case _:
+            print("Error: label must be one of:\n",
+                  "prot_roles, prot_groups, com_functions, demands, ",
+                  "obj_morals, subj_morals, all_morals")
+            return None
+
+    return df
+
+
 def moral_values_freq(
     corpus,
     moral_type="all",
@@ -28,7 +58,8 @@ def moral_values_freq(
                             subj: subjective moral expressions
                             all: both of the above
         - sum_dimensions: bool. If true, the two sides of moral dimensions
-                          according to MFT (e.g. Care/Harm) are summed into one row.
+                          according to MFT (e.g. Care/Harm) are summed into
+                          one row.
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
     Returns:
@@ -89,7 +120,6 @@ def moral_values_freq(
 
 def protagonist_role_freq(
     corpus,
-    language,
     plot=False,
     export=False
 ):
@@ -108,7 +138,7 @@ def protagonist_role_freq(
 
     df = su.get_prot_role_df()
 
-    protagonist_list = corpus.concat_annos("protagonist_doubles")
+    protagonist_list = corpus.concat_annos("protagonists_doubles")
     for protagonist in protagonist_list:
         if protagonist['Rolle'] in df['Rolle'].values:
             df.loc[df['Rolle'] == protagonist['Rolle'], 'Vorkommen'] += 1
@@ -123,13 +153,6 @@ def protagonist_role_freq(
         'Anteil': [1]
         })
     df = pd.concat([df, sum_df], ignore_index=True)
-
-    if language.lower() == 'de':
-        rows_to_delete = ['Malefizient:in', 'Bezug unklar']
-        df = df[~df['Rolle'].isin(rows_to_delete)]
-    else:
-        rows_to_delete = ['Kein Bezug']
-        df = df[~df['Rolle'].isin(rows_to_delete)]
 
     if plot:
         df_nosum = df[df['Rolle'] != 'Summe']
@@ -165,7 +188,7 @@ def protagonist_group_freq(
 
     df = su.get_prot_group_df()
 
-    protagonist_list = corpus.concat_annos("protagonist")
+    protagonist_list = corpus.concat_annos("protagonists")
     for protagonist in protagonist_list:
         if protagonist['Gruppe'] in df['Gruppe'].values:
             df.loc[df['Gruppe'] == protagonist['Gruppe'], 'Vorkommen'] += 1
@@ -198,7 +221,6 @@ def protagonist_group_freq(
 
 def comfunction_freq(
     corpus,
-    language,
     plot=False,
     export=False
 ):
@@ -233,20 +255,6 @@ def comfunction_freq(
         'Anteil': [1]
         })
     df = pd.concat([df, sum_df], ignore_index=True)
-
-    if language.lower() == 'de':
-        rows_to_delete = [
-            'Appell+Beziehung',
-            'Appell+Darstellung',
-            'Appell+Expression'
-        ]
-    else:
-        rows_to_delete = [
-            'Beziehung',
-            'Darstellung',
-            'Expression'
-        ]
-    df = df[~df['Kommunikative Funktion'].isin(rows_to_delete)]
 
     if plot:
         df_nosum = df[df['Kommunikative Funktion'] != 'Summe']
@@ -351,8 +359,11 @@ def freq_inside_spans(
               "\n".join(label_possibilities))
         return None
 
-    label_list = corpus.concat_annos(label_type)
-    data = la.label_freq_table(corpus.moralizations, label_list)
+    concat_labels = corpus.concat_annos_coords(label_type)
+    concat_morals = corpus.concat_coords("moralizations")
+    print(concat_labels)
+    print(len(concat_morals), concat_morals)
+    data = la.label_freq_table(concat_morals, concat_labels)
 
     # Convert dictionary to DataFrame
     df = pd.DataFrame.from_dict(data, orient='index', columns=['Häufigkeit'])
@@ -389,7 +400,6 @@ def freq_inside_spans(
 
 def roles_and_groups(
     corpus,
-    language,
     percent=False,
     export=False
 ):
@@ -408,115 +418,27 @@ def roles_and_groups(
     """
 
     protagonists = corpus.concat_annos("protagonists")
-    df = la.roles_groups_table(protagonists, language)
+    df = la.roles_groups_table(protagonists)
 
     if percent:
-        if language.lower() == 'de':
-            df[['Adresassat:in',
+        df[['Adressat:in',
+            'Benefizient:in',
+            'Forderer:in',
+            'Kein Bezug',
+            'Malefizient:in',
+            'Bezug unklar'
+            ]] \
+            = df[[
+                'Adressat:in',
                 'Benefizient:in',
                 'Forderer:in',
-                'Kein Bezug'
-                ]] \
-                = df[[
-                    'Adresassat:in',
-                    'Benefizient:in',
-                    'Forderer:in',
-                    'Kein Bezug'
-                ]].apply(lambda x: x / x.sum() * 100)
-        else:
-            df[['Adresassat:in',
-                'Benefizient:in',
-                'Forderer:in',
+                'Kein Bezug',
                 'Malefizient:in',
                 'Bezug unklar'
-                ]] \
-                = df[[
-                    'Adresassat:in',
-                    'Benefizient:in',
-                    'Forderer:in',
-                    'Malefizient:in'
-                    'Bezug unklar'
-                ]].apply(lambda x: x / x.sum() * 100)
+            ]].apply(lambda x: x / x.sum() * 100)
 
     if export:
         df.to_csv("roles_and_groups.csv", index=False, decimal=',')
-
-    return df
-
-
-def groups_and_ownother(
-    corpus,
-    percent=False,
-    export=False
-):
-    """
-    Counts how often a specific group of protagonists (such as
-    'individual') is associated with own group/other group identification
-    inside a CorpusData object.
-
-    Parameters:
-        - corpus: CorpusData object
-        - relative: bool. If true, calculate relative frequencies
-                          of every association.
-        - export: bool. If true, store results in a csv file.
-    Returns:
-        - Pandas dataframe as described above.
-    """
-
-    protagonists = corpus.concat_annos("protagonists")
-    df = la.groups_ownother_table(protagonists)
-
-    if percent:
-        df[['Own Group',
-            'Other Group',
-            'Neutral',
-            ]] \
-            = df[['Own Group',
-                  'Other Group',
-                  'Neutral',
-                  ]].apply(lambda x: x / x.sum() * 100)
-
-    if export:
-        df.to_csv("groups_and_ownother.csv", index=False, decimal=',')
-
-    return df
-
-
-def roles_and_ownother(
-    corpus,
-    language,
-    percent=False,
-    export=False
-):
-    """
-    Counts how often a specific roles of protagonists (such as
-    'individual') is associated with own group/other group identification
-    inside a CorpusData object.
-
-    Parameters:
-        - corpus: CorpusCollection object
-        - relative: bool. If true, calculate relative frequencies
-                          of every association.
-        - export: bool. If true, store results in a csv file.
-    Returns:
-        - Pandas dataframe as described above.
-    """
-
-    protagonists = corpus.concat_annos("protagonists")
-    df = la.roles_ownother_table(protagonists, language)
-
-    if percent:
-        df[['Own Group',
-            'Other Group',
-            'Neutral',
-            ]] \
-            = df[['Own Group',
-                  'Other Group',
-                  'Neutral',
-                  ]].apply(lambda x: x / x.sum() * 100)
-
-    if export:
-        df.to_csv("roles_and_ownother.csv", index=False, decimal=',')
 
     return df
 
@@ -553,9 +475,9 @@ def association_measure(
     if (cat1 not in cat_possibilities or cat2 not in cat_possibilities):
         print("Error: cat1 and cat2 must be one of:\n" +
               "\n".join(cat_possibilities))
-        return
+        return None
     if (cat1 in cat_possibilities[3:6] and cat2 in cat_possibilities[3:6]):
-        print("It is better to use ------ here!")
+        print("It is better to use roles_and_groups() here!")
 
     tables_df = la.table_table(corpus, cat1, cat2)
 

@@ -140,7 +140,7 @@ def possible_labels(category):
         ]
     if category == cat_possibilities[3]:
         return [
-            'Adresassat:in',
+            'Adressat:in',
             'Benefizient:in',
             'Forderer:in',
             'Malefizient:in',
@@ -228,7 +228,7 @@ def freq_table(corpus, associations1, associations2, label1, label2):
     counter_12 = 0
     counter_none = 0
 
-    for moralization in corpus.moralizations:
+    for moralization in corpus.concat_coords("moralizations"):
         if label_in_list(associations1[moralization], label1):
             if label_in_list(associations2[moralization], label2):
                 counter_12 += 1
