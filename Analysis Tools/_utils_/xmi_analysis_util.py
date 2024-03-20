@@ -1,6 +1,6 @@
+import os
 import numpy as np
 import xlsxwriter
-import os
 
 
 def inside_of(coord_list, coord_tuple):
@@ -91,11 +91,11 @@ def get_span(text, coordinates):
 def special_upper(string):
     """Works like the upper() method, exept it does not turn 'ß' into 'SS'."""
     newstring = ''
-    for i in range(len(string)):
-        if (string[i]) != 'ß':
-            newstring = ''.join((newstring, string[i].upper()))
+    for char in string:
+        if char != 'ß':
+            newstring = ''.join((newstring, char.upper()))
         else:
-            newstring = ''.join((newstring, string[i]))
+            newstring = ''.join((newstring, char))
 
     return newstring
 
@@ -118,10 +118,13 @@ def possible_labels(category):
     category; for example, returns a list of MFT categories
     if a _moral category was passed.
     """
-    cat_possibilities = ['obj_morals', 'subj_morals', 'all_morals',
-                         'prot_roles', 'prot_groups', 'prot_ownother',
-                         'com_functions',
-                         'demands']
+
+    cat_possibilities = [
+        'obj_morals', 'subj_morals', 'all_morals',
+        'prot_roles', 'prot_groups', 'prot_ownother',
+        'com_functions',
+        'demands'
+    ]
     if category in cat_possibilities[:3]:
         return [
             'Care',
@@ -155,12 +158,6 @@ def possible_labels(category):
                 "soziale Gruppe",
                 "Sonstige"
             ]
-    if category == cat_possibilities[5]:
-        return [
-            'Own Group',
-            'Other Group',
-            'Neutral',
-        ]
     if category == cat_possibilities[6]:
         return [
             'Appell',
@@ -190,21 +187,23 @@ def calculate_normalized_pmi(contingency_table):
     Returns:
         - PMI value.
     """
+
     counter_12, counter_1 = contingency_table[0]
     counter_2, counter_none = contingency_table[1]
 
     total_segments = counter_12 + counter_1 + counter_2 + counter_none
 
     p_x_and_y = counter_12
-    p_x = (counter_12 + counter_1)
-    p_y = (counter_12 + counter_2)
+    p_x = counter_12 + counter_1
+    p_y = counter_12 + counter_2
 
     if p_x_and_y == 0.0 or p_x == 0.0 or p_y == 0.0:
         return float('-inf')  # Avoid log(0)
 
     pmi = np.log2(p_x_and_y / ((p_x * p_y) / total_segments))
     jsi = -1 * np.log2(p_x_and_y / total_segments)
-    return (pmi / jsi)
+    norm_pmi = pmi / jsi
+    return norm_pmi
 
 
 def freq_table(corpus, associations1, associations2, label1, label2):
@@ -223,6 +222,7 @@ def freq_table(corpus, associations1, associations2, label1, label2):
     Returns:
         - two-dimensional array (the contigency table as described above).
     """
+
     counter_1 = 0
     counter_2 = 0
     counter_12 = 0
@@ -263,7 +263,6 @@ def list_to_excel(source_list, filepath):
         row += 1
 
     workbook.close()
-    return None
 
 
 def dict_to_excel(source_dict, filepath):
@@ -273,6 +272,7 @@ def dict_to_excel(source_dict, filepath):
     file; the values are divided into sections
     based on the key the are associated with.
     """
+
     workbook = xlsxwriter.Workbook(filepath)
     worksheet = workbook.add_worksheet("dict")
 
@@ -293,7 +293,6 @@ def dict_to_excel(source_dict, filepath):
             row += 1
 
     workbook.close()
-    return None
 
 
 def valid_category(category):
@@ -302,10 +301,13 @@ def valid_category(category):
     of a CorpusData object; if not, prints a list of strings
     that do.
     """
-    possible_categories = ['obj_morals', 'subj_morals', 'all_morals',
-                           'protagonists', 'protagonists_doubles',
-                           'com_functions',
-                           'expl_demands', 'impl_demands', 'all_demands']
+
+    possible_categories = [
+        'obj_morals', 'subj_morals', 'all_morals',
+        'protagonists', 'protagonists_doubles',
+        'com_functions',
+        'expl_demands', 'impl_demands', 'all_demands'
+    ]
 
     if category not in possible_categories:
         print("Error: label_type must be one of:\n" +

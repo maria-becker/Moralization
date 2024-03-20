@@ -375,15 +375,7 @@ def freq_inside_spans(
     """
 
     # Check if category is valid
-    categories = [
-        'obj_morals', 'subj_morals', 'all_morals',
-        'protagonists', 'protagonists_doubles',
-        'com_functions',
-        'expl_demands', 'impl_demands', 'all_demands'
-    ]
-    if category not in categories:
-        print("Error: label_type must be one of:\n" +
-              "\n".join(categories))
+    if not xau.valid_category(category):
         return None
 
     # Get the data from the corpus and create a table
@@ -507,15 +499,18 @@ def association_measure(
         print("It is better to use roles_and_groups() here!")
 
     # Create a table of cooccurrences
-    tables_df = la.table_table(corpus, cat1, cat2)
+    tables_df = la.coocurr_table(corpus, cat1, cat2)
 
     # If significance is True, calculate the significance for each combination
     # Calculate the PMI for each combination
     if significance:
-        columns = pd.MultiIndex.from_product([xau.possible_labels(cat2),
-                                             ['Sig', 'PMI']])
-        am_df = pd.DataFrame(index=xau.possible_labels(cat1),
-                             columns=columns)
+        columns = pd.MultiIndex.from_product(
+            [xau.possible_labels(cat2), ['Sig', 'PMI']]
+        )
+        am_df = pd.DataFrame(
+            index=xau.possible_labels(cat1),
+            columns=columns
+        )
         for row_label in am_df.index:
             for col_label in xau.possible_labels(cat2):
 
