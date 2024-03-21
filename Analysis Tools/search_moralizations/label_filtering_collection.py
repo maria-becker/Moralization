@@ -1,19 +1,9 @@
-import os
 import sys
+import label_filtering_single as lfs
 
 sys.path.append("../_utils_")
-import label_filtering_single as lfs
 import xmi_analysis_util as xau
-
-
-def print_dict(dictionary):
-    for key in dictionary.keys():
-        name = os.path.basename(key)
-        print(xau.special_upper(name))
-        for entry in dictionary[key]:
-            print(entry)
-        print("\n")
-    return
+import language_tag_manager as langtag
 
 
 def lemma_label_instances_collection(
@@ -25,7 +15,7 @@ def lemma_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.lemma_label_instances(
+        output_dict[corpus] = lfs.lemma_label_instances_single(
             corpus_collection.collection[corpus],
             lemma,
             label_type,
@@ -35,8 +25,10 @@ def lemma_label_instances_collection(
         )
 
     if export:
-        xau.dict_to_excel(output_dict,
-                          f"{lemma}_{label_type}_instances.xlsx")
+        xau.dict_to_excel(
+            output_dict,
+            f"{lemma}_{label_type}_instances.xlsx"
+        )
 
     return output_dict
 
@@ -50,7 +42,7 @@ def pos_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.pos_label_instances(
+        output_dict[corpus] = lfs.pos_label_instances_single(
             corpus_collection.collection[corpus],
             pos,
             label_type,
@@ -60,8 +52,10 @@ def pos_label_instances_collection(
         )
 
     if export:
-        xau.dict_to_excel(output_dict,
-                          f"{pos}_{label_type}_instances.xlsx")
+        xau.dict_to_excel(
+            output_dict,
+            f"{pos}_{label_type}_instances.xlsx"
+        )
 
     return output_dict
 
@@ -75,7 +69,7 @@ def poslist_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.poslist_label_instances(
+        output_dict[corpus] = lfs.poslist_label_instances_single(
             corpus_collection.collection[corpus],
             pos_list,
             label_type,
@@ -85,8 +79,10 @@ def poslist_label_instances_collection(
         )
 
     if export:
-        xau.dict_to_excel(output_dict,
-                          f"[{pos_list[1]}, ...]_{label_type}_instances.xlsx")
+        xau.dict_to_excel(
+            output_dict,
+            f"[{pos_list[1]}, ...]_{label_type}_instances.xlsx"
+        )
 
     return output_dict
 
@@ -99,7 +95,7 @@ def count_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.count_label_instances(
+        output_dict[corpus] = lfs.count_label_instances_single(
             corpus_collection.collection[corpus],
             count,
             label_type,
@@ -107,8 +103,10 @@ def count_label_instances_collection(
         )
 
     if export:
-        xau.dict_to_excel(output_dict,
-                          f"{str(count)}_{label_type}_instances.xlsx")
+        xau.dict_to_excel(
+            output_dict,
+            f"{str(count)}_{label_type}_instances.xlsx"
+        )
 
     return output_dict
 
@@ -121,7 +119,7 @@ def tag_label_instances_collection(
 ):
     output_dict = {}
     for corpus in corpus_collection.collection.keys():
-        output_dict[corpus] = lfs.tag_label_instances(
+        output_dict[corpus] = lfs.tag_label_instances_single(
             corpus_collection.collection[corpus],
             tag,
             label_type,
@@ -129,7 +127,33 @@ def tag_label_instances_collection(
         )
 
     if export:
-        xau.dict_to_excel(output_dict,
-                          f"{tag}_{label_type}_instances.xlsx")
+        xau.dict_to_excel(
+            output_dict,
+            f"{tag}_{label_type}_instances.xlsx"
+        )
+
+    return output_dict
+
+
+def search_annotation_count_collection(
+    corpus,
+    category,
+    count,
+    export=False
+):
+    output_dict = {}
+    for corp in corpus.collection.keys():
+        output_dict[corpus] = lfs.annotation_count_instances_single(
+            corp.collection[corpus],
+            category,
+            count,
+            export=False
+        )
+
+    if export:
+        xau.dict_to_excel(
+            output_dict,
+            f"{str(count)}_{category}_instances.xlsx"
+        )
 
     return output_dict

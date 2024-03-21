@@ -2,10 +2,12 @@ from enum import Enum
 
 
 class TagForm(Enum):
-    WRITTEN_NAME_ENGLISH = 'name'
-    TWO_DIGIT_ISO639_1_ENGLISH = 'iso639_1'
-    THREE_DIGIT_ISO639_2T_NATIONAL = 'iso639_2T'
-    THREE_DIGIT_ISO639_2B_ENGLISH = 'iso639_2B'
+    NAME_ENGLISH = 'name'
+    NAME_GERMAN = 'german'
+    ISO639_1_ENGLISH = 'iso639_1'
+    ISO639_2T_NATIONAL = 'iso639_2T'
+    ISO639_2B_ENGLISH = 'iso639_2B'
+    HANTA = 'hanta'
 
 
 dict_english = {
@@ -14,7 +16,8 @@ dict_english = {
         'iso639_1': 'en',
         'iso639_2T': 'eng',
         'iso639_2B': 'eng',
-        'country_specific': ['en_US', 'en_GB', 'en_AU', 'en_CA']
+        'country_specific': ['en_US', 'en_GB', 'en_AU', 'en_CA'],
+        'hanta': 'en'
 }
 dict_german = {
         'name': 'german',
@@ -22,7 +25,8 @@ dict_german = {
         'iso639_1': 'de',
         'iso639_2T': 'deu',
         'iso639_2B': 'ger',
-        'country_specific': ['de_DE', 'de_AT', 'de_CH']
+        'country_specific': ['de_DE', 'de_AT', 'de_CH'],
+        'hanta': 'ger'
 }
 dict_french = {
         'name': 'french',
@@ -87,7 +91,7 @@ def get_language_tag(language: str, form: TagForm):
     """
 
     for language_dict in language_tag_dicts:
-        if language in language_dict.values():
+        if language.lower() in language_dict.values():
             # If a match is found, return the value associated with the 'form' key.
             return language_dict.get(form.value, None)
     # If no match is found, throw an error
@@ -97,4 +101,4 @@ def get_language_tag(language: str, form: TagForm):
 
 if __name__ == '__main__':
     test_language_tag = 'german'
-    print(get_language_tag('deu', form=TagForm.WRITTEN_NAME_ENGLISH))
+    print(get_language_tag('deu', form=TagForm.NAME_ENGLISH))

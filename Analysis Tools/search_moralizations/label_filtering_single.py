@@ -1,196 +1,233 @@
 import sys
 import nltk
-from HanTa import HanoverTagger as ht
-import spacy
+import search_helpers
 
 sys.path.append("../_utils_")
 import xmi_analysis_util as xau
+import language_tag_manager as langtag
 
 
-def lemma_label_instances(
+def lemma_label_instances_single(
     corpus,
     lemma,
-    label_type,
+    category,
     language="de",
-    hanta=False,
-    export=False
+    **kwargs
 ):
-    if not xau.valid_category(label_type):
-        return
 
-    label = getattr(corpus, label_type)
+    hanta = kwargs.get('hanta', False)
+    export = kwargs.get('export', False)
 
-    association = xau.label_associations(
+    if not xau.valid_category(category):
+        return None
+
+    label = getattr(corpus, category)
+
+    if hanta:
+        relevant_spans_list = hanta_lemma_label_search(
+            corpus,
+            label,
+            lemma,
+            language
+        )
+    else:
+        relevant_spans_list = spacy_lemma_label_search(
+            corpus,
+            label,
+            lemma,
+            language
+        )
+
+    return_string_list = search_helpers.relevant_strings(
+        corpus.text,
+        relevant_spans_list
+    )
+
+    if export:
+        xau.list_to_excel(return_string_list,
+                          f"{lemma}_{category}_instances.xlsx")
+
+    return return_string_list
+
+
+def hanta_lemma_label_search(corpus, label, lemma, language):
+
+    associations = xau.label_associations(
         corpus.moralizations,
         label
     )
+
+    tagger, language = search_helpers.init_hanta_nltk(language)
 
     relevant_spans_list = []
 
-    if (language == "de" or language == "en") and hanta:
+    for moralization, instances in associations.items():
+        for instance in instances:
+            tokenized = nltk.tokenize.word_tokenize(
+                xau.get_span(corpus.text, instance), language=language)
+            tags = tagger.tag_sent(tokenized)
+            for tag in tags:
+                if tag[1] == lemma:
+                    relevant_spans_list.append(moralization)
+                    break
 
-        if language == "de":
-            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-            language = 'german'
-        elif language == "en":
-            tagger = ht.HanoverTagger('morphmodel_en.pgz')
-            language = 'english'
-
-        for moralization, instances in association.items():
-            for instance in instances:
-                tokenized = nltk.tokenize.word_tokenize(
-                    xau.get_span(corpus.text, instance), language=language)
-                tags = tagger.tag_sent(tokenized)
-                for tag in tags:
-                    if tag[1] == lemma:
-                        relevant_spans_list.append(moralization)
-                        break
-
-    else:
-
-        model = spacy.load(f'{language}_core_news_md')
-
-        for moralization, instances in association.items():
-            for instance in instances:
-                doc = model(xau.get_span(corpus.text, instance))
-                for token in doc:
-                    if token.lemma_ == lemma:
-                        relevant_spans_list.append(moralization)
-                        break
-
-    return_string_list = []
-    for moralization in relevant_spans_list:
-        return_string_list.append(xau.get_span(corpus.text,
-                                               moralization))
-
-    if export:
-        xau.list_to_excel(return_string_list,
-                          f"{lemma}_{label_type}_instances.xlsx")
-
-    return return_string_list
+    return relevant_spans_list
 
 
-def poslist_label_instances(
-    corpus,
-    pos_list,
-    label_type,
-    language="de",
-    hanta=False,
-    export=False
-):
+def spacy_lemma_label_search(corpus, label, lemma, language):
 
-    if not xau.valid_category(label_type):
-        return
-
-    label = getattr(corpus, label_type)
-
-    association = xau.label_associations_category(
+    associations = xau.label_associations(
         corpus.moralizations,
         label
     )
 
-    relevant_spans_dict = {}
+    model = search_helpers.init_spacy(language)
 
-    if (language == "de" or language == "en") and hanta:
+    relevant_spans_list = []
 
-        if language == "de":
-            tagger = ht.HanoverTagger('morphmodel_ger.pgz')
-            language = 'german'
-        elif language == "en":
-            tagger = ht.HanoverTagger('morphmodel_en.pgz')
-            language = 'english'
+    for moralization, instances in associations.items():
+        for instance in instances:
+            doc = model(xau.get_span(corpus.text, instance))
+            for token in doc:
+                if token.lemma_ == lemma:
+                    relevant_spans_list.append(moralization)
+                    break
 
-        relevant_spans_list = []
+    return relevant_spans_list
 
-        for moralization, instances in association.items():
-            for instance in instances:
-                tokenized = nltk.tokenize.word_tokenize(
-                    xau.get_span(corpus.text, moralization), language=language)
-                tags = tagger.tag_sent(tokenized)
 
-                for tag in tags:
-                    if tag[2] in pos_list and tag[0].lower() in xau.get_span(
-                                corpus.text, instance["Coordinates"]
-                                ).lower():
-                        relevant_spans_list.append(instance)
-                        break
+def poslist_label_instances_single(
+    corpus,
+    pos_list,
+    category,
+    language,
+    **kwargs
+):
+
+    hanta = kwargs.get('hanta', False)
+    export = kwargs.get('export', False)
+
+    if not xau.valid_category(category):
+        return None
+
+    label = getattr(corpus, category)
+
+    if hanta:
+        relevant_spans_list = hanta_poslist_label_search(
+            corpus,
+            label,
+            pos_list,
+            language
+        )
 
     else:
+        relevant_spans_list = spacy_poslist_label_search(
+            corpus,
+            label,
+            pos_list,
+            language
+        )
 
-        model = spacy.load(f'{language}_core_news_md')
-
-        for moralization, instances in association.items():
-            for instance in instances:
-                doc = model(xau.get_span(corpus.text, moralization))
-
-                for tag in doc:
-                    if tag.pos_ in pos_list and tag.text in xau.get_span(
-                                corpus.text,
-                                instance["Coordinates"]):
-                        relevant_spans_list.append(instance)
-                        break
-
-    relevant_spans_dict = xau.label_associations(corpus.moralizations,
-                                                 relevant_spans_list)
-
-    text = corpus.text
-    return_string_list = []
-
-    for moralization, relevant_instances in relevant_spans_dict.items():
-        if relevant_instances != []:
-            for instance in relevant_instances:
-                if xau.get_span(text, instance):
-                    text = (
-                        text[:(instance[0])]
-                        + xau.special_upper(xau.get_span(text, instance))
-                        + text[(instance[1]):]
-                    )
-            output_string = xau.get_span(text, moralization)
-            return_string_list.append(output_string)
+    relevant_spans_dict = xau.label_associations(
+        corpus.moralizations,
+        relevant_spans_list
+    )
+    return_string_list = search_helpers.highlighted_relevant_strings(
+        corpus.text,
+        relevant_spans_dict
+    )
 
     if export:
         xau.list_to_excel(return_string_list,
-                          f"[{pos_list[1]}, ...]_{label_type}_instances.xlsx")
+                          f"[{pos_list[1]}, ...]_{category}_instances.xlsx")
 
     return return_string_list
 
 
-def pos_label_instances(
+def hanta_poslist_label_search(corpus, label, pos_list, language):
+
+    associations = xau.label_associations(
+        corpus.moralizations,
+        label
+    )
+
+    tagger, language = search_helpers.init_hanta_nltk(language)
+
+    relevant_spans_list = []
+
+    for moralization, instances in associations.items():
+        for instance in instances:
+            tokenized = nltk.tokenize.word_tokenize(
+                xau.get_span(corpus.text, instance), language=language)
+            tags = tagger.tag_sent(tokenized)
+            for tag in tags:
+                if tag[2] in pos_list:
+                    relevant_spans_list.append(moralization)
+                    break
+
+    return relevant_spans_list
+
+
+def spacy_poslist_label_search(corpus, label, pos_list, language):
+
+    associations = xau.label_associations(
+        corpus.moralizations,
+        label
+    )
+
+    model = search_helpers.init_spacy(language)
+
+    relevant_spans_list = []
+
+    for moralization, instances in associations.items():
+        for instance in instances:
+            doc = model(xau.get_span(corpus.text, instance))
+            for token in doc:
+                if token.pos_ in pos_list:
+                    relevant_spans_list.append(moralization)
+                    break
+
+    return relevant_spans_list
+
+
+def pos_label_instances_single(
     corpus,
     pos,
-    label_type,
-    language="ger",
-    hanta=False,
-    export=False
+    category,
+    language,
+    **kwargs
 ):
 
-    hits_list = poslist_label_instances(
+    hanta = kwargs.get('hanta', False)
+    export = kwargs.get('export', False)
+
+    hits_list = poslist_label_instances_single(
         corpus,
         [pos],
-        label_type,
+        category,
         language,
-        hanta,
+        hanta=hanta,
         export=False
     )
 
     if export:
         xau.list_to_excel(hits_list,
-                          f"[{pos}_{label_type}_instances.xlsx")
+                          f"[{pos}_{category}_instances.xlsx")
 
     return hits_list
 
 
-def count_label_instances(
+def count_label_instances_single(
     corpus,
     count,
-    label_type,
+    category,
     export=False
 ):
 
-    if not xau.valid_category(label_type):
-        return
+    if not xau.valid_category(category):
+        return None
 
-    label = getattr(corpus, label_type)
+    label = getattr(corpus, category)
 
     association = xau.label_associations(
         corpus.moralizations,
@@ -204,62 +241,84 @@ def count_label_instances(
     }
 
     text = corpus.text
-    return_string_list = []
-    for moralization_tuple in relevant_spans_dict:
-        for protagonist in relevant_spans_dict[moralization_tuple]:
-            if xau.get_span(corpus.text, protagonist):
-                text = (
-                    text[:(protagonist[0])]
-                    + xau.special_upper(xau.get_span(corpus.text, protagonist))
-                    + text[(protagonist[1]):]
-                )
-        output_string = xau.get_span(text, moralization_tuple)
-        return_string_list.append(output_string)
+    return_string_list = search_helpers.highlighted_relevant_strings(
+        text,
+        relevant_spans_dict
+    )
 
     if export:
         xau.list_to_excel(return_string_list,
-                          f"{str(count)}_{label_type}_instances.xlsx")
+                          f"{str(count)}_{category}_instances.xlsx")
 
     return return_string_list
 
 
-def tag_label_instances(
+def tag_label_instances_single(
     corpus,
     label,
-    label_type,
+    category,
     export=False
 ):
 
-    if not xau.valid_category(label_type):
-        return
+    if not xau.valid_category(category):
+        return None
 
     text = corpus.text
 
-    labels = getattr(corpus, label_type)
+    labels = getattr(corpus, category)
 
     matched_anno_list = []
     for span in labels:
         if label in span.values():
             matched_anno_list.append(span)
 
-    relevant_spans_dict = xau.label_associations(corpus.moralizations,
-                                                 matched_anno_list)
+    relevant_spans_dict = xau.label_associations(
+        corpus.moralizations,
+        matched_anno_list
+    )
 
-    return_string_list = []
-    for moralization, relevant_instances in relevant_spans_dict.items():
-        if relevant_instances != []:
-            for instance in relevant_instances:
-                if xau.get_span(text, instance):
-                    text = "".join((
-                        text[:(instance[0])],
-                        xau.special_upper(xau.get_span(text, instance)),
-                        text[(instance[1]):]
-                    ))
-            output_string = xau.get_span(text, moralization)
-            return_string_list.append(output_string)
+    return_string_list = search_helpers.highlighted_relevant_strings(
+        text,
+        relevant_spans_dict
+    )
 
     if export:
         xau.list_to_excel(return_string_list,
-                          f"{label}_{label_type}_instances.xlsx")
+                          f"{label}_{category}_instances.xlsx")
 
     return return_string_list
+
+
+def annotation_count_instances_single(
+    corpus,
+    category,
+    count,
+    export=False
+):
+
+    if not xau.valid_category(category):
+        return None
+
+    label = getattr(corpus, category)
+
+    associations = xau.label_associations(
+        corpus.moralizations,
+        label
+    )
+
+    associations = {
+        key: entry for key, entry
+        in associations.items()
+        if len(entry) == count
+    }
+
+    return_strings = search_helpers.highlighted_relevant_strings(
+        corpus.text,
+        associations
+    )
+
+    if export:
+        xau.list_to_excel(return_strings,
+                          f"{str(count)}_{category}_instances.xlsx")
+
+    return return_strings

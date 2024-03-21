@@ -173,6 +173,12 @@ class Corpus:
             for index in sorted(remove_indices, reverse=True):
                 del getattr(subcorpus, annotation)[index]
 
+    def concat_text(self):
+        result = ""
+        for corpus in self.collection.values():
+            result += corpus.text
+        return result
+
 
 def text_from_xmi(filepath):
     """

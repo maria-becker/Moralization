@@ -88,6 +88,7 @@ def coocurr_table(corpus, cat1, cat2):
         cat2: The second category.
     Returns:
         A pandas DataFrame with the co-occurrences of the two categories.
+        The cells of the df are fourfould tables in the form of 2d lists.
     """
 
     cat_possibilities = [

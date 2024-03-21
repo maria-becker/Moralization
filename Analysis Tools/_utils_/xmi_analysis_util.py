@@ -332,3 +332,12 @@ def list_xmis_in_directory(directory):
             filepaths.append(filepath)
 
     return filepaths
+
+
+def print_subcorp_dict(dictionary):
+    for key in dictionary.keys():
+        name = os.path.basename(key)
+        print(special_upper(name))
+        for entry in dictionary[key]:
+            print(entry)
+        print("\n")
