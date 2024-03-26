@@ -21,7 +21,7 @@ def init_hanta_nltk(language):
 
     tagger = ht.HanoverTagger(f'morphmodel_{language}.pgz')
     nltk_language = langtag.get_language_tag(
-        language, langtag.TagForm.ENGLISH_NAME
+        language, langtag.TagForm.NAME_ENGLISH
     )
 
     return tagger, nltk_language
@@ -31,7 +31,7 @@ def init_spacy(language):
     """Initializes a spacy model for a given language."""
 
     language = langtag.get_language_tag(
-        language, langtag.TagForm.ISO639_1
+        language, langtag.TagForm.ISO639_1_ENGLISH
     )
 
     nlp = spacy.load(f'{language}_core_news_lg')
