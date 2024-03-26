@@ -181,4 +181,3 @@ def token_label_instances(
         )
 
     return output_dict
-)
