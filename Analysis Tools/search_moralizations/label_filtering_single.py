@@ -47,7 +47,7 @@ def lemma_label_instances_single(
         xau.list_to_excel(return_string_list,
                           f"{lemma}_{category}_instances.xlsx")
 
-    return return_string_list
+    return list(set(return_string_list))
 
 
 def hanta_lemma_label_search(corpus, label, lemma, language):
@@ -71,7 +71,7 @@ def hanta_lemma_label_search(corpus, label, lemma, language):
                     relevant_spans_list.append(moralization)
                     break
 
-    return relevant_spans_list
+    return list(set(relevant_spans_list))
 
 
 def spacy_lemma_label_search(corpus, label, lemma, language):
@@ -93,7 +93,7 @@ def spacy_lemma_label_search(corpus, label, lemma, language):
                     relevant_spans_list.append(moralization)
                     break
 
-    return relevant_spans_list
+    return list(set(relevant_spans_list))
 
 
 def poslist_label_instances_single(
@@ -141,7 +141,7 @@ def poslist_label_instances_single(
         xau.list_to_excel(return_string_list,
                           f"[{pos_list[1]}, ...]_{category}_instances.xlsx")
 
-    return return_string_list
+    return list(set(return_string_list))
 
 
 def hanta_poslist_label_search(corpus, label, pos_list, language):
@@ -165,7 +165,7 @@ def hanta_poslist_label_search(corpus, label, pos_list, language):
                     relevant_spans_list.append(moralization)
                     break
 
-    return relevant_spans_list
+    return list(set(relevant_spans_list))
 
 
 def spacy_poslist_label_search(corpus, label, pos_list, language):
@@ -187,7 +187,7 @@ def spacy_poslist_label_search(corpus, label, pos_list, language):
                     relevant_spans_list.append(moralization)
                     break
 
-    return relevant_spans_list
+    return list(set(relevant_spans_list))
 
 
 def pos_label_instances_single(
@@ -214,7 +214,7 @@ def pos_label_instances_single(
         xau.list_to_excel(hits_list,
                           f"[{pos}_{category}_instances.xlsx")
 
-    return hits_list
+    return list(set(hits_list))
 
 
 def count_label_instances_single(
@@ -250,7 +250,7 @@ def count_label_instances_single(
         xau.list_to_excel(return_string_list,
                           f"{str(count)}_{category}_instances.xlsx")
 
-    return return_string_list
+    return list(set(return_string_list))
 
 
 def tag_label_instances_single(
@@ -286,7 +286,7 @@ def tag_label_instances_single(
         xau.list_to_excel(return_string_list,
                           f"{label}_{category}_instances.xlsx")
 
-    return return_string_list
+    return list(set(return_string_list))
 
 
 def annotation_count_instances_single(
@@ -321,4 +321,43 @@ def annotation_count_instances_single(
         xau.list_to_excel(return_strings,
                           f"{str(count)}_{category}_instances.xlsx")
 
-    return return_strings
+    return list(set(return_strings))
+
+
+def token_label_instances_single(
+    corpus,
+    token,
+    category,
+    lower=False,
+    export=False
+):
+
+    if not xau.valid_category(category):
+        return None
+
+    label = getattr(corpus, category)
+
+    associations = xau.label_associations(
+        corpus.moralizations,
+        label
+    )
+
+    relevant_spans_list = []
+    text = corpus.text
+    for moraliz, anno in associations.items():
+        if lower:
+            if token in xau.get_span(text, anno).lower():
+                relevant_spans_list.append(moraliz)
+        elif token in xau.get_span(text, anno):
+            relevant_spans_list.append(moraliz)
+
+    return_string_list = search_helpers.relevant_strings(
+        corpus.text,
+        relevant_spans_list
+    )
+
+    if export:
+        xau.list_to_excel(return_string_list,
+                          f"{token}_{category}_instances.xlsx")
+
+    return list(set(return_string_list))
