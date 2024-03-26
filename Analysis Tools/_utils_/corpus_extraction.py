@@ -173,6 +173,15 @@ class Corpus:
             for index in sorted(remove_indices, reverse=True):
                 del getattr(subcorpus, annotation)[index]
 
+    def filter_in(self, annotation, keep_list):
+        for subcorpus in self.collection.values():
+            remove_indices = []
+            for index, anno in enumerate(getattr(subcorpus, annotation)):
+                if not any([label in anno.values() for label in keep_list]):
+                    remove_indices.append(index)
+            for index in sorted(remove_indices, reverse=True):
+                del getattr(subcorpus, annotation)[index]
+
     def concat_text(self):
         result = ""
         for corpus in self.collection.values():
