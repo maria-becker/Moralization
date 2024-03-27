@@ -8,7 +8,7 @@ sys.path.append('../_utils_')
 import xmi_analysis_util as xau
 
 
-def tokens_in_annotations(
+def tokens_in_annotation_subcorpus(
         label_type,
         language,
         corpus
@@ -32,8 +32,9 @@ def tokens_in_annotations(
                 token_dict[token] += 1
 
     # Sort dictionary by values
-    token_dict = {k: v for k, v in sorted(token_dict.items(),
-                                          key=lambda item: item[1])}
+    token_dict = dict(
+        sorted(token_dict.items(), key=lambda item: item[1])
+    )
 
     return token_dict
 
@@ -57,7 +58,7 @@ def find_phrase_position_spacy(sentence, phrase):
     return -1
 
 
-def lemmata_in_annotations(
+def lemmata_in_annotation_subcorpus(
         label_type,
         language,
         corpus,
@@ -140,13 +141,14 @@ def lemmata_in_annotations(
                         lemma_dict[tag.lemma_] += 1
 
     # Sort dictionary by values
-    lemma_dict = {k: v for k, v in sorted(lemma_dict.items(),
-                                          key=lambda item: item[1])}
+    lemma_dict = dict(
+        sorted(lemma_dict.items(), key=lambda item: item[1])
+    )
 
     return lemma_dict
 
 
-def pos_in_annotations(
+def pos_in_annotation_subcorpus(
         pos_list,
         label_type,
         language,
@@ -229,46 +231,11 @@ def pos_in_annotations(
                         else:
                             lemma_dict[tag.lemma_] += 1
 
-    # Sort dictionary by values
-    lemma_dict = {k: v for k, v in sorted(lemma_dict.items(),
-                                          key=lambda item: item[1])}
+    lemma_dict = dict(
+        sorted(lemma_dict.items(), key=lambda item: item[1])
+    )
 
     return lemma_dict
-
-
-def get_comparison_list(
-    filename,
-    header,
-    comparison_sheet,
-    dont_count_list=None,
-    top_hits=0
-):
-    """
-    Mostly depricated. Uses files as input that cannot be generated with
-    the current code. Use tokens_in_annotation() and list comprehension instead
-    """
-
-    comparison_list = []
-    df_protag = pd.read_excel(
-        filename, sheet_name=comparison_sheet, header=header)
-
-    # Use all entries in the list if no maximum was set
-    if top_hits == 0:
-        top_hits = len(df_protag)
-
-    # Add all relevant Lemmas to the list that will get compared
-    for index, row in df_protag.iterrows():
-        if index < top_hits:
-            if not row[1] == -1:
-                comparison_list.append(row[0])
-
-    # Remove unwanted entries from list
-    if dont_count_list:
-        for entry in dont_count_list:
-            if entry in comparison_list:
-                comparison_list.remove(entry)
-
-    return comparison_list
 
 
 def lemmata_with_annotations(
