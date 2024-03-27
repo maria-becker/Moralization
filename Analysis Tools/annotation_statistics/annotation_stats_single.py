@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from scipy import stats
-import _stat_utils_ as su
+import annotation_tables as su
 
 sys.path.append("../_utils_")
 import xmi_analysis_util as xau
