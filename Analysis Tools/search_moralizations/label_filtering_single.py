@@ -24,23 +24,23 @@ def lemma_label_instances_single(
     label = getattr(corpus, category)
 
     if hanta:
-        relevant_spans_list = hanta_lemma_label_search(
+        relevant_spans_dict = hanta_lemma_label_search(
             corpus,
             label,
             lemma,
             language
         )
     else:
-        relevant_spans_list = spacy_lemma_label_search(
+        relevant_spans_dict = spacy_lemma_label_search(
             corpus,
             label,
             lemma,
             language
         )
 
-    return_string_list = search_helpers.relevant_strings(
+    return_string_list = search_helpers.highlighted_relevant_strings(
         corpus.text,
-        relevant_spans_list
+        relevant_spans_dict
     )
 
     if export:
@@ -52,48 +52,58 @@ def lemma_label_instances_single(
 
 def hanta_lemma_label_search(corpus, label, lemma, language):
 
-    associations = xau.label_associations(
+    associations = xau.label_associations_category(
         corpus.moralizations,
         label
     )
 
     tagger, language = search_helpers.init_hanta_nltk(language)
 
-    relevant_spans_list = []
+    relevant_spans_dict = {
+        key: [] for key in associations.keys()
+    }
 
     for moralization, instances in associations.items():
         for instance in instances:
             tokenized = nltk.tokenize.word_tokenize(
-                xau.get_span(corpus.text, instance), language=language)
+                xau.get_span(corpus.text, instance['Coordinates']),
+                language=language
+            )
             tags = tagger.tag_sent(tokenized)
             for tag in tags:
                 if tag[1] == lemma:
-                    relevant_spans_list.append(moralization)
+                    relevant_spans_dict[moralization].append(
+                        instance['Coordinates']
+                    )
                     break
 
-    return list(set(relevant_spans_list))
+    return relevant_spans_dict
 
 
 def spacy_lemma_label_search(corpus, label, lemma, language):
 
-    associations = xau.label_associations(
+    associations = xau.label_associations_category(
         corpus.moralizations,
         label
     )
 
     model = search_helpers.init_spacy(language)
 
-    relevant_spans_list = []
+    relevant_spans_dict = {
+        key: [] for key in associations.keys()
+    }
 
     for moralization, instances in associations.items():
         for instance in instances:
-            doc = model(xau.get_span(corpus.text, instance))
+            doc = model(xau.get_span(corpus.text, instance['Coordinates']))
             for token in doc:
                 if token.lemma_ == lemma:
-                    relevant_spans_list.append(moralization)
+                    relevant_spans_dict[moralization].append(
+                        instance['Coordinates']
+                    )
                     break
 
-    return list(set(relevant_spans_list))
+    return relevant_spans_dict
 
 
 def poslist_label_instances_single(
@@ -113,7 +123,7 @@ def poslist_label_instances_single(
     label = getattr(corpus, category)
 
     if hanta:
-        relevant_spans_list = hanta_poslist_label_search(
+        relevant_spans_dict = hanta_poslist_label_search(
             corpus,
             label,
             pos_list,
@@ -121,17 +131,13 @@ def poslist_label_instances_single(
         )
 
     else:
-        relevant_spans_list = spacy_poslist_label_search(
+        relevant_spans_dict = spacy_poslist_label_search(
             corpus,
             label,
             pos_list,
             language
         )
 
-    relevant_spans_dict = xau.label_associations(
-        corpus.moralizations,
-        relevant_spans_list
-    )
     return_string_list = search_helpers.highlighted_relevant_strings(
         corpus.text,
         relevant_spans_dict
@@ -146,48 +152,58 @@ def poslist_label_instances_single(
 
 def hanta_poslist_label_search(corpus, label, pos_list, language):
 
-    associations = xau.label_associations(
+    associations = xau.label_associations_category(
         corpus.moralizations,
         label
     )
 
     tagger, language = search_helpers.init_hanta_nltk(language)
 
-    relevant_spans_list = []
+    relevant_spans_dict = {
+        key: [] for key in associations.keys()
+    }
 
     for moralization, instances in associations.items():
         for instance in instances:
             tokenized = nltk.tokenize.word_tokenize(
-                xau.get_span(corpus.text, instance), language=language)
+                xau.get_span(corpus.text, instance["Coordinates"]),
+                language=language
+            )
             tags = tagger.tag_sent(tokenized)
             for tag in tags:
                 if tag[2] in pos_list:
-                    relevant_spans_list.append(moralization)
+                    relevant_spans_dict[moralization].append(
+                        instance["Coordinates"]
+                    )
                     break
 
-    return list(set(relevant_spans_list))
+    return relevant_spans_dict
 
 
 def spacy_poslist_label_search(corpus, label, pos_list, language):
 
-    associations = xau.label_associations(
+    associations = xau.label_associations_category(
         corpus.moralizations,
         label
     )
 
     model = search_helpers.init_spacy(language)
 
-    relevant_spans_list = []
+    relevant_spans_dict = {
+        key: [] for key in associations.keys()
+    }
 
     for moralization, instances in associations.items():
         for instance in instances:
-            doc = model(xau.get_span(corpus.text, instance))
+            doc = model(xau.get_span(corpus.text, instance['Coordinates']))
             for token in doc:
                 if token.pos_ in pos_list:
-                    relevant_spans_list.append(moralization)
+                    relevant_spans_dict[moralization].append(
+                        instance['Coordinates']
+                    )
                     break
 
-    return list(set(relevant_spans_list))
+    return relevant_spans_dict
 
 
 def pos_label_instances_single(
