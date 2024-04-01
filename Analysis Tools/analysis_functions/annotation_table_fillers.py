@@ -10,8 +10,8 @@ Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 
 import operator as op
 import pandas as pd
-import annotation_tables
-import _util_ as util
+from . import annotation_tables
+from . import _util_ as util
 
 
 def label_freq_table(moral_spans_list, annotation_list):
@@ -64,7 +64,7 @@ def roles_groups_table(protagonists):
     df = annotation_tables.get_roles_groups_df()
 
     for protagonist in protagonists:
-        role = protagonist["role"]
+        role = protagonist["Rolle"]
         if protagonist["Gruppe"] == "Individuum":
             df.loc[df['Kategorie'] == "Individuum", role] += 1
         elif protagonist["Gruppe"] == "Institution":
@@ -100,8 +100,8 @@ def coocurr_table(corpus, cat1, cat2):
     ]
     cat_trans = [
         'obj_morals', 'subj_morals', 'all_morals',
-        'com_functions',
         'protagonists_doubles', 'protagonists', 'protagonists',
+        'com_functions',
         'all_demands'
     ]
 

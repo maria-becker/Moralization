@@ -19,9 +19,9 @@ import pandas as pd
 from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import annotation_tables as su
-import _util_ as util
-import annotation_table_fillers as atf
+from . import _util_ as util
+from . import annotation_tables as su
+from . import annotation_table_fillers as atf
 
 
 def label_frequency(
@@ -147,7 +147,7 @@ def moral_values_freq(
         plt.tight_layout()
         plt.show()
     if export:
-        df.to_csv("protagonist_role_freq.csv", index=False, decimal=',')
+        df.to_csv("protagonist_role_freq.csv", index=True, decimal=',')
 
     return df
 
@@ -196,7 +196,7 @@ def protagonist_role_freq(
         plt.tight_layout()
         plt.show()
     if export:
-        df.to_csv("protagonist_role_freq.csv", index=False, decimal=',')
+        df.to_csv("protagonist_role_freq.csv", index=True, decimal=',')
 
     return df
 
@@ -245,7 +245,7 @@ def protagonist_group_freq(
         plt.tight_layout()
         plt.show()
     if export:
-        df.to_csv("protagonist_group_freq.csv", index=False, decimal=',')
+        df.to_csv("protagonist_group_freq.csv", index=True, decimal=',')
 
     return df
 
@@ -294,7 +294,7 @@ def comfunction_freq(
         plt.tight_layout()
         plt.show()
     if export:
-        df.to_csv("comfunction_freq.csv", index=False, decimal=',')
+        df.to_csv("comfunction_freq.csv", index=True, decimal=',')
 
     return df
 
@@ -352,7 +352,7 @@ def demand_freq(
         plt.title('Frequenz Forderungstypen')
         plt.show()
     if export:
-        df.to_csv("demand_freq.csv", index=False, decimal=',')
+        df.to_csv("demand_freq.csv", index=True, decimal=',')
 
     return df
 
@@ -417,7 +417,7 @@ def freq_inside_spans(
         plt.show()
     if export:
         df.to_csv(("freq_inside_spans_" + category + ".csv"),
-                  index=False, decimal=',')
+                  index=True, decimal=',')
 
     return df
 
@@ -463,7 +463,7 @@ def roles_and_groups(
             ]].apply(lambda x: x / x.sum() * 100)
 
     if export:
-        df.to_csv("roles_and_groups.csv", index=False, decimal=',')
+        df.to_csv("roles_and_groups.csv", index=True, decimal=',')
 
     return df
 
@@ -540,6 +540,6 @@ def association_measure(
                 am_df.loc[row_label, col_label] = pmi_norm
 
     if export:
-        am_df.to_csv("association.csv", index=False, decimal=',')
+        am_df.to_csv("association.csv", index=True, decimal=',')
 
     return am_df
