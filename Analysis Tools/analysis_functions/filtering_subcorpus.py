@@ -11,9 +11,9 @@ TODO:
 """
 
 import nltk
-import filter_helpers
-import _util_ as util
-import _nlp_ as nlp
+from . import filter_helpers
+from . import _util_ as util
+from . import _nlp_ as nlp
 
 
 def lemmata_category_instances(
@@ -123,7 +123,7 @@ def spacy_lemmata_category_search(subcorpus, label, lemmata, language):
         for instance in instances:
             doc = model(util.get_span(subcorpus.text, instance['Coordinates']))
             for token_ in doc:
-                if token_.lemmata_ == lemmata:
+                if token_.lemma_ == lemmata:
                     relevant_spans_dict[moralization].append(
                         instance['Coordinates']
                     )
@@ -349,8 +349,8 @@ def tag_category_instances(
 
 def count_category_instances(
     subcorpus,
-    category,
     count,
+    category,
     export=False
 ):
     """Find all instances of a specific count of annotations in a category."""
@@ -418,12 +418,13 @@ def token_category_instances(
 
     relevant_spans_list = []
     text = subcorpus.text
-    for moraliz, anno in associations.items():
-        if lower:
-            if token_ in util.get_span(text, anno).lower():
+    for moraliz, annotations in associations.items():
+        for anno in annotations:
+            if lower:
+                if token_ in util.get_span(text, anno).lower():
+                    relevant_spans_list.append(moraliz)
+            elif token_ in util.get_span(text, anno):
                 relevant_spans_list.append(moraliz)
-        elif token_ in util.get_span(text, anno):
-            relevant_spans_list.append(moraliz)
 
     return_string_list = filter_helpers.relevant_strings(
         subcorpus.text,

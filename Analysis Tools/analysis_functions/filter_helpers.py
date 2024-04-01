@@ -10,7 +10,7 @@ TODO:
 - Small module. Maybe move somewhere else?
 """
 
-import _util_ as util
+from . import _util_ as util
 
 
 def highlighted_relevant_strings(text, relevant_spans_dict, allow_zero=False):

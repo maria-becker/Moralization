@@ -13,8 +13,8 @@ TODO:
 """
 
 
-import filtering_subcorpus
-import _util_ as util
+from . import filtering_subcorpus
+from . import _util_ as util
 
 
 def lemmata_category_instances(
@@ -224,6 +224,7 @@ def type_category_instances(
     corpus,
     type_,
     category,
+    lower=False,
     export=False
 ):
     """Look for instances of a specific type (word form)
@@ -246,6 +247,7 @@ def type_category_instances(
             corpus.collection[subcorpus],
             type_,
             category,
+            lower=lower,
             export=False
         )
 
