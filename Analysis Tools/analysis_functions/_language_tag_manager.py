@@ -1,7 +1,27 @@
+"""
+Handle language tags in different forms and change them
+based on what form of the tag is needed by e.g. an NLP module
+such as spacy.
+
+Authors:
+- Ardia "Kamikali" (addi98unity@gmail.com)
+- Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+  University of Heidelberg
+  Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
+
+TODO:
+- Chance line length to 79 characters max.
+"""
+
+
 from enum import Enum
 
 
 class TagForm(Enum):
+    """Represents the different forms in which language tags
+    can be represented.
+    """
+
     NAME_ENGLISH = 'name'
     NAME_GERMAN = 'german'
     ISO639_1_ENGLISH = 'iso639_1'
@@ -100,5 +120,4 @@ def get_language_tag(language: str, form: TagForm):
 
 
 if __name__ == '__main__':
-    test_language_tag = 'german'
     print(get_language_tag('deu', form=TagForm.NAME_ENGLISH))

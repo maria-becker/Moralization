@@ -1,30 +1,34 @@
-import sys
-import xml.etree.ElementTree as ET
-import regex as re
-import pandas as pd
+"""
+This module allows one to retrieve sentences that were tagged a certain way
+(moralizing or not) for a given subcorpus.
 
-sys.path.append("../_utils_")
-import corpus_extraction as ce
-import xmi_analysis_util as xau
+Author:
+Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+University of Heidelberg
+Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
+"""
+
+
+import pandas as pd
+import _util_ as util
 
 
 def list_moral_strings_from_subcorpus(
     subcorpus
 ):
     """
-    Takes an xmi file and returns a list with 2-tuples.
-    The tuples mark the beginning and ending of spans that were
-    categorized as "moralizing speechacts".
+    Creates a list of all passages marked as moralizing in a subcorpus.
 
-    Parameters:
-        filepath: The xmi file you want to open.
+    Args:
+        subcorpus (Subcorpus): subcorpus object, representing an xmi file
+
     Returns:
-        List of 2-tuples.
+        list: A list of strings that were marked as moralizing.
     """
 
     moralizations = []
     for span in subcorpus.moralizations:
-        moralizations.append(xau.get_span(subcorpus.text, span))
+        moralizations.append(util.get_span(subcorpus.text, span))
 
     corpus_list = list(set(moralizations))
 
@@ -39,9 +43,11 @@ def list_nonmoral_strings_from_xlsx(
     """
     Creates a list which includes spans of the categories specified.
 
-    Parameters:
-        sheet_name: genre string, e.g. "Gerichtsurteile"
-        categories: 0, 1, 2, 3 like in the sheets
+    Args:
+        filepath (str): path to the xlsx file
+        sheet_name (str): genre string, e.g. "Gerichtsurteile"
+        categories (list of ints): 0, 1, 2, 3 like in the sheets
+
     Returns:
         List that has all the spans from the genre and category specified.
     """

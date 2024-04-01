@@ -1,13 +1,27 @@
-import sys
-import label_analysis as la
+"""
+Functions to analyse the distribution of annotation categories/labels
+inside a Corpus object's subcorpora.
+
+Allows the visualization with matplotlib graphs and the export
+to csv files.
+
+Author:
+Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+University of Heidelberg
+Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
+
+TODO:
+- Add option to analyze the moralization labels (explizit, Weltwissen etc.)
+
+"""
+
 import pandas as pd
+from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from scipy import stats
 import annotation_tables as su
-
-sys.path.append("../_utils_")
-import xmi_analysis_util as xau
+import _util_ as util
+import annotation_table_fillers as atf
 
 
 def label_frequency(
@@ -19,7 +33,7 @@ def label_frequency(
     """Creates a dataframe with the frequency of labels
     from a given annotation category.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - category: str - the annotation category you want to count.
             Possible values: "prot_roles", "prot_groups",
@@ -30,6 +44,7 @@ def label_frequency(
             Default is False.
         - **kwargs: additional boolean parameters for the specific functions:
             export (as csv) and plot (using matplotlib)
+
     Returns:
         Pandas dataframe with the label frequencies, or None if the
         category parameter is invalid.
@@ -66,11 +81,10 @@ def moral_values_freq(
     plot=False,
     export=False
 ):
-    """
-    Creates a Pandas dataframe with the counts of moral values (based on MFT)
-    in a Corpus object.
+    """Creates a Pandas dataframe with the counts of moral values
+    (based on MFT) in a Corpus object.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - moral_type: str - valid options are:
             "obj": concrete moral values
@@ -81,6 +95,7 @@ def moral_values_freq(
                           one row.
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above, or None if the moral_type
         parameter is invalid.
@@ -96,11 +111,7 @@ def moral_values_freq(
         print("Error: Moral_type parameter must be 'all', 'obj', or 'subj'.")
         return None
 
-    # Init empty dataframe and fill it with the counts
-    df = su.get_moral_df(False)
-    for value in value_list:
-        if value['Category'] in df['Moralwert'].values:
-            df.loc[df['Moralwert'] == value['Category'], 'Vorkommen'] += 1
+    df = atf.count_moral_values(value_list)
 
     # If sum_dimensions is True, sum the two sides of each moral dimension
     if sum_dimensions:
@@ -150,20 +161,18 @@ def protagonist_role_freq(
     Creates a Pandas dataframe with the counts of the roles
     of the protagonists in a Corpus object.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above.
     """
 
     # Init empty dataframe and fill it with the counts
-    df = su.get_prot_role_df()
     protagonist_list = corpus.concat_annos("protagonists_doubles")
-    for protagonist in protagonist_list:
-        if protagonist['Rolle'] in df['Rolle'].values:
-            df.loc[df['Rolle'] == protagonist['Rolle'], 'Vorkommen'] += 1
+    df = atf.count_protagonist_roles(protagonist_list)
 
     # Create a new column with relative frequencies
     total = df['Vorkommen'].sum()
@@ -201,20 +210,18 @@ def protagonist_group_freq(
     Creates a Pandas dataframe with the counts of the group categories
     of the protagonists in a Corpus object.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above.
     """
 
     # Init empty dataframe and fill it with the counts
-    df = su.get_prot_group_df()
     protagonist_list = corpus.concat_annos("protagonists")
-    for protagonist in protagonist_list:
-        if protagonist['Gruppe'] in df['Gruppe'].values:
-            df.loc[df['Gruppe'] == protagonist['Gruppe'], 'Vorkommen'] += 1
+    df = atf.count_protagonist_groups(protagonist_list)
 
     # Create a new column with relative frequencies
     total = df['Vorkommen'].sum()
@@ -252,22 +259,18 @@ def comfunction_freq(
     Creates a Pandas dataframe with the counts of communicative functions
     in a CorpusCollection object (i.e. in all subcorpora).
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above.
     """
 
     # Init empty dataframe and fill it with the counts
-    df = su.get_comfunction_df()
     comfunctions = corpus.concat_annos("com_functions")
-    for func in comfunctions:
-        if func['Category'] in df['Kommunikative Funktion'].values:
-            df.loc[
-                df['Kommunikative Funktion'] == func['Category'],
-                'Vorkommen'] += 1
+    df = atf.count_comfunctions(comfunctions)
 
     # Create a new column with relative frequencies
     total = df['Vorkommen'].sum()
@@ -305,10 +308,11 @@ def demand_freq(
     Creates a Pandas dataframe with the counts of explicit and implicit
     demands in a Corpus object.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file.
+
     Returns:
         - Pandas dataframe as described above.
     """
@@ -365,23 +369,24 @@ def freq_inside_spans(
     For example, the function can count how many moralizations
     contain 0, 1, 2, ... references to protagonists.
 
-    Parameters:
+    Args:
         - corpus: Corpus object'
         - label_type: the annotation category that you're counting
         - plot: bool. If true, output a plot of the results
         - export: bool. If true, store results in a csv file
+
     Returns:
         - Pandas dataframe as described above.
     """
 
     # Check if category is valid
-    if not xau.valid_category(category):
+    if not util.valid_category(category):
         return None
 
     # Get the data from the corpus and create a table
     concat_labels = corpus.concat_annos_coords(category)
     concat_morals = corpus.concat_coords("moralizations")
-    data = la.label_freq_table(concat_morals, concat_labels)
+    data = atf.label_freq_table(concat_morals, concat_labels)
 
     # Convert dictionary to DataFrame
     df = pd.DataFrame.from_dict(data, orient='index', columns=['Häufigkeit'])
@@ -427,17 +432,18 @@ def roles_and_groups(
     'individual') is associated with a specific role inside
     a Corpus object.
 
-    Parameters:
+    Args:
         - corpus_collection: Corpus object
         - relative: bool. If true, calculate relative frequencies
                           of every association.
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above.
     """
 
     protagonists = corpus.concat_annos("protagonists")
-    df = la.roles_groups_table(protagonists)
+    df = atf.roles_groups_table(protagonists)
 
     if percent:
         df[['Adressat:in',
@@ -475,13 +481,14 @@ def association_measure(
     category using PMI (pointwise mutual information). Creates a table
     with the results. It does this for a single Corpus object.
 
-    Parameters:
+    Args:
         - corpus: Corpus object
         - cat1: str. category you want to associate with the other category
         - cat2: str. category you want to associate with the other category
         - significance: bool. If true, calculates the significance with
                               Fisher's exact test for every association
         - export: bool. If true, store results in a csv file.
+
     Returns:
         Pandas dataframe as described above.
     """
@@ -499,25 +506,25 @@ def association_measure(
         print("It is better to use roles_and_groups() here!")
 
     # Create a table of cooccurrences
-    tables_df = la.coocurr_table(corpus, cat1, cat2)
+    tables_df = atf.coocurr_table(corpus, cat1, cat2)
 
     # If significance is True, calculate the significance for each combination
     # Calculate the PMI for each combination
     if significance:
         columns = pd.MultiIndex.from_product(
-            [xau.possible_labels(cat2), ['Sig', 'PMI']]
+            [util.possible_labels(cat2), ['Sig', 'PMI']]
         )
         am_df = pd.DataFrame(
-            index=xau.possible_labels(cat1),
+            index=util.possible_labels(cat1),
             columns=columns
         )
         for row_label in am_df.index:
-            for col_label in xau.possible_labels(cat2):
+            for col_label in util.possible_labels(cat2):
 
                 table = tables_df.loc[row_label, col_label]
 
                 fisher_sig = stats.fisher_exact(table).pvalue
-                pmi_norm = xau.calculate_normalized_pmi(table)
+                pmi_norm = util.calculate_normalized_pmi(table)
 
                 am_df.loc[row_label, (col_label, 'Sig')] = fisher_sig
                 am_df.loc[row_label, (col_label, 'PMI')] = pmi_norm
@@ -526,10 +533,10 @@ def association_measure(
     else:
         am_df = tables_df
         for row_label in am_df.index:
-            for col_label in xau.possible_labels(cat2):
+            for col_label in util.possible_labels(cat2):
                 table = tables_df.loc[row_label, col_label]
 
-                pmi_norm = xau.calculate_normalized_pmi(table)
+                pmi_norm = util.calculate_normalized_pmi(table)
                 am_df.loc[row_label, col_label] = pmi_norm
 
     if export:

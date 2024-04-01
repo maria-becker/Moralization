@@ -2,15 +2,16 @@
 This module contains functions that fill out tables/dataframes
 based on annotation data.
 
+Author:
+Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+University of Heidelberg
+Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 """
 
-import sys
 import operator as op
 import pandas as pd
-import _stat_utils_ as su
-
-sys.path.append("../_utils_")
-import xmi_analysis_util as xau
+import annotation_tables
+import _util_ as util
 
 
 def label_freq_table(moral_spans_list, annotation_list):
@@ -35,7 +36,7 @@ def label_freq_table(moral_spans_list, annotation_list):
     for moralization in moral_spans_list:
         moralizations_dict[moralization] = 0
     for annotation in annotation_list:
-        moral_span = xau.inside_of(
+        moral_span = util.inside_of(
             moral_spans_list, annotation["Coordinates"])
         if moral_span:
             moralizations_dict[moral_span] += 1
@@ -60,7 +61,7 @@ def roles_groups_table(protagonists):
         A pandas Dataframe.
     """
 
-    df = su.get_roles_groups_df()
+    df = annotation_tables.get_roles_groups_df()
 
     for protagonist in protagonists:
         role = protagonist["role"]
@@ -108,22 +109,22 @@ def coocurr_table(corpus, cat1, cat2):
     cat2_trans = cat_trans[cat_possibilities.index(cat2)]
 
     df_tables = pd.DataFrame(
-        index=xau.possible_labels(cat1),
-        columns=xau.possible_labels(cat2)
+        index=util.possible_labels(cat1),
+        columns=util.possible_labels(cat2)
     )
 
-    associations1 = xau.label_associations_category(
+    associations1 = util.label_associations_category(
         corpus.concat_coords("moralizations"),
         corpus.concat_annos_coords(cat1_trans)
     )
-    associations2 = xau.label_associations_category(
+    associations2 = util.label_associations_category(
         corpus.concat_coords("moralizations"),
         corpus.concat_annos_coords(cat2_trans)
     )
 
     for row_label in df_tables.index:
-        for col_label in xau.possible_labels(cat2):
-            table = xau.freq_table(
+        for col_label in util.possible_labels(cat2):
+            table = util.freq_table(
                 corpus,
                 associations1,
                 associations2,
@@ -133,3 +134,37 @@ def coocurr_table(corpus, cat1, cat2):
             df_tables.loc[row_label, col_label] = table
 
     return df_tables
+
+
+def count_moral_values(value_list):
+    df = annotation_tables.get_moral_df(False)
+    for value in value_list:
+        if value['Category'] in df['Moralwert'].values:
+            df.loc[df['Moralwert'] == value['Category'], 'Vorkommen'] += 1
+    return df
+
+
+def count_protagonist_roles(protagonist_list):
+    df = annotation_tables.get_prot_role_df()
+    for protagonist in protagonist_list:
+        if protagonist['Rolle'] in df['Rolle'].values:
+            df.loc[df['Rolle'] == protagonist['Rolle'], 'Vorkommen'] += 1
+    return df
+
+
+def count_protagonist_groups(protagonist_list):
+    df = annotation_tables.get_prot_group_df()
+    for protagonist in protagonist_list:
+        if protagonist['Gruppe'] in df['Gruppe'].values:
+            df.loc[df['Gruppe'] == protagonist['Gruppe'], 'Vorkommen'] += 1
+    return df
+
+
+def count_comfunctions(comfunction_list):
+    df = annotation_tables.get_comfunction_df()
+    for func in comfunction_list:
+        if func['Category'] in df['Kommunikative Funktion'].values:
+            df.loc[
+                df['Kommunikative Funktion'] == func['Category'],
+                'Vorkommen'] += 1
+    return df

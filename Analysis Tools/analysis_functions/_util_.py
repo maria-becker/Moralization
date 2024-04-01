@@ -1,13 +1,33 @@
+"""
+Collection of useful functions for the analysis of moralizations.
+
+Author:
+Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+University of Heidelberg
+Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
+
+TODO:
+- Add possible label for moralizations as a whole
+- Move some functions to more appropriate files
+"""
+
+
 import os
 import numpy as np
 import xlsxwriter
 
 
 def inside_of(coord_list, coord_tuple):
-    """
-    Checks whether the specific coordinates of coord_tuple
+    """Checks whether the specific coordinates of coord_tuple
     are inside any of the coordinates on the list.
-    Returns the first match, or None if there is no match.
+
+    Args:
+        coord_list (list): A list of 2-tuples with coordinates,
+            out of which one will might be wrapped around coord_tuple.
+        coord_tuple (tuple): A 2-tuple with coordinates.
+
+    Returns
+        The first matching tuple, or None if there is no match.
     """
 
     for coord in coord_list:
@@ -17,8 +37,7 @@ def inside_of(coord_list, coord_tuple):
 
 
 def label_associations(moral_spans_list, label_spans_list):
-    """
-    Takes a list of moral spans and a list of annotation dicts
+    """Takes a list of moral spans and a list of annotation dicts
     to create a dictionary where the keys are 2-tuples of the
     beginning and end of a moralization, and the values are
     lists of 2-tuples of the beginnings and ends of the annotations
@@ -45,8 +64,7 @@ def label_associations(moral_spans_list, label_spans_list):
 
 
 def label_associations_category(moral_spans_list, label_spans_list):
-    """
-    Takes a list of moral spans and a list of annotation dicts
+    """Takes a list of moral spans and a list of annotation dicts
     to create a dictionary where the keys are 2-tuples of the
     beginning and end of a moralization, and the values are
     lists of dictionaries that contain a 2-tuple and all
@@ -75,11 +93,11 @@ def label_associations_category(moral_spans_list, label_spans_list):
 
 
 def get_span(text, coordinates):
-    """
-    Takes a corpus string and a 2-tuple. Returns the slice
+    """Takes a corpus string and a 2-tuple. Returns the slice
     of the 2-tuple if possible;
     otherwise prints an Error message and returns None.
     """
+
     try:
         span = text[coordinates[0]:(coordinates[1])]
         return span
@@ -90,6 +108,7 @@ def get_span(text, coordinates):
 
 def special_upper(string):
     """Works like the upper() method, exept it does not turn 'ß' into 'SS'."""
+
     newstring = ''
     for char in string:
         if char != 'ß':
@@ -101,11 +120,11 @@ def special_upper(string):
 
 
 def label_in_list(anno_list, category):
-    """
-    Takes a list of dicts; and if the category passed
+    """Takes a list of dicts; and if the category passed
     to this function is somewhere in the values of these
     dicts, returns True; else, False.
     """
+
     for element in anno_list:
         if category in element.values():
             return True
@@ -113,8 +132,7 @@ def label_in_list(anno_list, category):
 
 
 def possible_labels(category):
-    """
-    Returns lists of possible labels for any given
+    """Returns lists of possible labels for any given
     category; for example, returns a list of MFT categories
     if a _moral category was passed.
     """
@@ -177,8 +195,7 @@ def possible_labels(category):
 
 
 def calculate_normalized_pmi(contingency_table):
-    """
-    Calculate PMI (Pointwise Mutual Information)
+    """Calculate PMI (Pointwise Mutual Information)
     from a given contingency table.
 
     Parameters:
@@ -207,8 +224,7 @@ def calculate_normalized_pmi(contingency_table):
 
 
 def freq_table(corpus, associations1, associations2, label1, label2):
-    """
-    Creates a contigency table for two annotation labels. Looks whether
+    """Creates a contigency table for two annotation labels. Looks whether
     the one, both or none of the lables are present at least once
     for each moralizing segment in the corpus.
 
@@ -248,8 +264,7 @@ def freq_table(corpus, associations1, associations2, label1, label2):
 
 
 def list_to_excel(source_list, filepath):
-    """
-    Takes a list and writes it into the first column
+    """Takes a list and writes it into the first column
     of an excel file.
     """
 
@@ -265,9 +280,8 @@ def list_to_excel(source_list, filepath):
     workbook.close()
 
 
-def dict_to_excel(source_dict, filepath):
-    """
-    Takes a dictionary with lists as values and
+def dict_to_xlsx(source_dict, filepath):
+    """Takes a dictionary with lists as values and
     writes the list contents into the first row of an excel
     file; the values are divided into sections
     based on the key the are associated with.
@@ -296,8 +310,7 @@ def dict_to_excel(source_dict, filepath):
 
 
 def valid_category(category):
-    """
-    Checks whether a string conforms with one of the attributes
+    """Checks whether a string conforms with one of the attributes
     of a CorpusData object; if not, prints a list of strings
     that do.
     """
@@ -335,6 +348,8 @@ def list_xmis_in_directory(directory):
 
 
 def print_subcorp_dict(dictionary):
+    """Prints a dictionary with lists as values in a readable format."""
+
     for key in dictionary.keys():
         name = os.path.basename(key)
         print(special_upper(name))

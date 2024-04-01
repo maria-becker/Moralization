@@ -10,7 +10,11 @@ The module's classes are used by most other modules
 in the 'Analysis Tools' directory, but provide no immediate
 analysis options themselves.
 
-Author: Bruno Brocai
+Authors:
+- Ardia "Kamikali" (addi98unity@gmail.com)
+- Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
+  University of Heidelberg
+  Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 """
 
 
@@ -31,6 +35,8 @@ class SubCorpus:
         corpus string
     moralizations : list of 2-tuples
         beginnings and ends of moralizing segments
+    detailed_moralizations : list of dicts containing 2-tuples and
+        annotation info aLAKSÖJDFÖLASKDJF
     obj_morals : list of dicts containing 2-tuples and annotation info
         beginnings and ends of moral value segments, together with their
         moral category according to MFT
@@ -177,10 +183,17 @@ class Corpus:
         for subcorpus in self.collection.values():
             remove_indices = []
             for index, anno in enumerate(getattr(subcorpus, annotation)):
-                if not any([label in anno.values() for label in keep_list]):
+                if not any(self.__label_match_gen(anno, keep_list)):
                     remove_indices.append(index)
             for index in sorted(remove_indices, reverse=True):
                 del getattr(subcorpus, annotation)[index]
+
+    def __label_match_gen(self, annotation, label_list):
+        for label in annotation.values():
+            if label in label_list:
+                yield True
+            else:
+                yield False
 
     def concat_text(self):
         result = ""
