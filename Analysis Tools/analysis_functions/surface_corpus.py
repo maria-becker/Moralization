@@ -16,9 +16,9 @@ Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 
 
 import re
-import surface_sents_subcorpus
-import surface_words_subcorpus
-import _util_ as util
+from . import surface_sents_subcorpus
+from . import surface_words_subcorpus
+from . import _util_ as util
 
 
 def add_dicts(dict1, dict2):

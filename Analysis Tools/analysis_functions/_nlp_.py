@@ -12,7 +12,7 @@ Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 
 import spacy
 from HanTa import HanoverTagger as ht
-import _language_tag_manager as langtag
+from . import _language_tag_manager as langtag
 
 
 def init_nltk_language(language):

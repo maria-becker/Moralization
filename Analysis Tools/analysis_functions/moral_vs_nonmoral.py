@@ -16,7 +16,7 @@ Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 import nltk
 from scipy import stats
 import xlsxwriter
-import _nlp_ as nlp
+from . import _nlp_ as nlp
 
 
 def nlp_kwargs_handler(kwargs):

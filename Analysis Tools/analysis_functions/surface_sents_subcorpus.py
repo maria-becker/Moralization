@@ -10,7 +10,7 @@ Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
 
 
 import pandas as pd
-import _util_ as util
+from . import _util_ as util
 
 
 def list_moral_strings_from_subcorpus(

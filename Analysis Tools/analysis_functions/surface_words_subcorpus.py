@@ -21,8 +21,8 @@ TODO:
 
 
 import nltk
-import _util_ as util
-import _nlp_ as nlp
+from . import _util_ as util
+from . import _nlp_ as nlp
 
 
 def check_category(category):
