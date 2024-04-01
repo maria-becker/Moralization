@@ -15,6 +15,9 @@ Authors:
 - Bruno Brocai (bruno.brocai@gs.uni-heidelberg.de)
   University of Heidelberg
   Research Projekt "Moralisierungen in verschiedenen Wissensdomänen"
+
+TODO:
+- Make use of the language attribute or delete
 """
 
 
