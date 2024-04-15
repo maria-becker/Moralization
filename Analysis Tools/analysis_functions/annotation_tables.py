@@ -181,7 +181,7 @@ def get_roles_groups_df():
                 "soziale Gruppe",
                 "Sonstige"
             ],
-            'Adresassat:in': [
+            'Adressat:in': [
                 0, 0, 0, 0, 0
             ],
             'Benefizient:in': [
