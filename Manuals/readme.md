@@ -8,4 +8,4 @@ Cite as:
 
 [EN] Becker, Maria (2025): Manuals for pragmalinguistic annotations of moralizations. Available at: https://github.com/maria-becker/Moralization/edit/main/Manuals
 
-[DE] Becker, Maria (2025): Manuale zur pragmalinguistischen Annotations von Moralisierungshandlungen. Abrufbar unter: https://github.com/maria-becker/Moralization/edit/main/Manuals
+[DE] Becker, Maria (2025): Manuale zur pragmalinguistischen Annotation von Moralisierungshandlungen. Abrufbar unter: https://github.com/maria-becker/Moralization/edit/main/Manuals
