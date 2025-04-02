@@ -1,4 +1,4 @@
-# Multilingual Dictionaries of Morality Indicating Words
+Multilingual Dictionaries of Morality Indicating Words
 
 Last Update: 07.07.2023
 
@@ -17,7 +17,7 @@ DiMi is available in four languages: German, English, Italian, and French. In ad
 Moreover, for each dictionary we provide a subset of particularly typical moral-indicating words  (“Selection”).
 
 
-**Multilinguales Wörterbücher moralindizierender Vokabeln**
+Multilinguales Wörterbücher moralindizierender Vokabeln
 
 Verweise auf moralische Werte mittels Hochwert- bzw. Delimitationswörtern wie bspw. Freiheit, gleichberechtigt, Ungerechtigkeit oder unlauter sind eine wesentliche Eigenschaft von Moralisierungen. Diese Schlagwörter lassen sich bereits auf der Textoberfläche erkennen. Daher bieten sie sich zur automatisierten Detektion (möglicher) Moralisierungen an. Dementsprechend wurden auch in dem Projekt Annotation und automatische Analyse von Moralisierungspraktiken in verschiedenen Wissensdomänen Hochwert- bzw. Delimitationswörter zur Erstellung der Korpora moralisierender Sprachhandlungen verwendet. 
 Hierfür wurde ein Wörterbuch mit moralindizierenden Wörtern erstellt. Zunächst wurde ein manuell erstelltes seed set (Felder/Müller 2021), das 130 deutsche Hochwert- und Delimitationswörter beinhaltet, um Wörter mit ähnlichen Kookkurrenzprofilen erweitert. Die dahinterstehende Annahme ist, dass Wörter einander ähnlich sind, wenn sich ihre Kookkurrenzprofile ähneln (vgl. Perkuhn et al. 2012: 128). Die Suche nach Wörtern mit ähnlichen Kookkurrenzprofilen erfolgte mithilfe der Kookkurrenzdatenbank CCDB, eine „korpuslinguistische Denk- und Experimentierplattform für die Erforschung und theoretische Begründung von systemisch-strukturellen Eigenschaften von Kohäsionsrelationen zwischen den Konstituenten des Sprachgebrauchs“ (Belica 2011: 162). Die Datenbank basiert auf einem aus 2,2 Milliarden laufenden Textwörtern bestehendes Teilkorpus des Deutschen Referenzkorpus. 
